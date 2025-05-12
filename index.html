@@ -1,59 +1,311 @@
+<!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>The Aviator: The Game | Codrops</title>
-		<meta name="description" content="Demo of the game: The Making of 'The Aviator': Animating a Basic 3D Scene with Three.js" />
-		<meta name="keywords" content="three.js, webgl, tutorial, game, 3d, animation, airplane, web development, javascript" />
-		<meta name="author" content="Karim Maaloul for Codrops" />
-		<link rel="shortcut icon" href="favicon.ico">
-		<link href='https://fonts.googleapis.com/css?family=Playfair+Display:400,700,700italic' rel='stylesheet' type='text/css'>
-		<link rel="stylesheet" type="text/css" href="css/demo.css" />
-		<link rel="stylesheet" type="text/css" href="css/game.css" />
-		<script type="text/javascript" src="js/TweenMax.min.js"></script>
-		<script type="text/javascript" src="js/three.min.js"></script>
-		<script type="text/javascript" src="js/game.js" /></script>
-		<!--[if IE]>
+
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Super Helpers: The Bee Savers | Interactive Game Experience</title>
+	<meta name="description"
+		content="Interactive game experience based on the 'Super Helpers: The Bee Savers' picture book. Help the little bees protect the environment!" />
+	<meta name="keywords"
+		content="super helpers, bee savers, bees, rescue, environment, three.js, webgl, game, 3d, animation" />
+	<link rel="shortcut icon" href="favicon.ico">
+	<link href='https://fonts.googleapis.com/css?family=Playfair+Display:400,700,700italic' rel='stylesheet'
+		type='text/css'>
+	<!-- 引入Howler.js音频库 -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+	<!-- CSS will be imported via main.js -->
+	<style>
+		.start-screen {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			background-color: rgba(0, 0, 0, 0);
+			/* Remove original background color */
+			z-index: 10;
+			overflow: hidden;
+			/* Prevent background overflow */
+		}
+
+		.start-screen::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-image: url('./img/cover.png');
+			/* Use relative path */
+			background-size: cover;
+			background-position: center;
+			background-repeat: no-repeat;
+			opacity: 0.9;
+			/* Increase transparency slightly to make the image clearer */
+			filter: blur(2px) brightness(1.1);
+			/* Fine-tune blur effect and increase brightness */
+			z-index: -1;
+			animation: fadeIn 2s ease-in-out, slowZoom 30s infinite alternate;
+			/* Add slow zoom effect */
+			transform-origin: center;
+		}
+
+		.start-content {
+			background-color: rgba(0, 0, 0, 0.6);
+			/* Semi-transparent background for content area */
+			padding: 40px;
+			border-radius: 15px;
+			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+			backdrop-filter: blur(8px);
+			/* Enhance glass effect */
+			-webkit-backdrop-filter: blur(8px);
+			/* Safari support */
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			/* Add subtle border */
+			animation: slideUp 1.2s ease-out;
+			/* Content area slide-in effect */
+			max-width: 80%;
+			text-align: center;
+			transition: all 0.5s ease;
+		}
+
+		.start-content:hover {
+			box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+			transform: translateY(-5px);
+		}
+
+		.start-button {
+			background-color: #f25346;
+			color: white;
+			font-size: 24px;
+			padding: 16px 42px;
+			border: none;
+			border-radius: 50px;
+			/* More rounded button */
+			cursor: pointer;
+			transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+			font-family: 'Playfair Display', serif;
+			margin-top: 30px;
+			position: relative;
+			overflow: hidden;
+			animation: pulse 2s infinite;
+			/* Button pulse effect */
+			box-shadow: 0 6px 20px rgba(242, 83, 70, 0.4);
+			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+			letter-spacing: 1px;
+		}
+
+		.start-button::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(90deg,
+					transparent,
+					rgba(255, 255, 255, 0.2),
+					transparent);
+			transition: all 0.6s;
+		}
+
+		.start-button:hover {
+			background-color: #e6352a;
+			transform: scale(1.1) translateY(-5px);
+			box-shadow: 0 10px 30px rgba(242, 83, 70, 0.6);
+			letter-spacing: 3px;
+		}
+
+		.start-button:hover::before {
+			left: 100%;
+		}
+
+		.start-title {
+			color: white;
+			font-size: 60px;
+			margin-bottom: 20px;
+			font-family: 'Playfair Display', serif;
+			text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+		}
+
+		.start-subtitle {
+			color: #d8d0d1;
+			font-size: 24px;
+			margin-bottom: 20px;
+			font-family: 'Playfair Display', serif;
+			text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+		}
+
+		.book-cover {
+			width: 220px;
+			height: 220px;
+			object-fit: cover;
+			border-radius: 10px;
+			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+			margin-bottom: 20px;
+			transition: transform 0.3s ease;
+			animation: float 3s ease-in-out infinite;
+			/* Floating effect */
+		}
+
+		.book-cover:hover {
+			transform: scale(1.05);
+		}
+
+		@keyframes fadeIn {
+			0% {
+				opacity: 0;
+				filter: blur(10px) brightness(0.8);
+			}
+
+			100% {
+				opacity: 0.9;
+				filter: blur(2px) brightness(1.1);
+			}
+		}
+
+		@keyframes slideUp {
+			0% {
+				transform: translateY(70px) scale(0.95);
+				opacity: 0;
+				filter: blur(5px);
+			}
+
+			70% {
+				filter: blur(1px);
+			}
+
+			100% {
+				transform: translateY(0) scale(1);
+				opacity: 1;
+				filter: blur(0px);
+			}
+		}
+
+		@keyframes float {
+
+			0%,
+			100% {
+				transform: translateY(0);
+			}
+
+			50% {
+				transform: translateY(-10px);
+			}
+		}
+
+		@keyframes pulse {
+			0% {
+				transform: scale(1);
+			}
+
+			50% {
+				transform: scale(1.05);
+			}
+
+			100% {
+				transform: scale(1);
+			}
+		}
+
+		@keyframes slowZoom {
+			0% {
+				transform: scale(1);
+			}
+
+			100% {
+				transform: scale(1.1);
+			}
+		}
+	</style>
+	<!--[if IE]>
 		  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
-	</head>
-	<body>
-		<div class="game-holder" id="gameHolder">
-			<div class="header">
-				<h1><span>the</span>Aviator</h1>
-				<h2>fly it to the end</h2>
-				<div class="score" id="score">
-					<div class="score__content" id="level">
-						<div class="score__label">level</div>
-						<div class="score__value score__value--level" id="levelValue">1</div>
-						<svg class="level-circle" id="levelCircle" viewbox="0 0 200 200">
-							<circle id="levelCircleBgr" r="80" cx="100" cy="100" fill="none" stroke="#d1b790" stroke-width="24px" />
-							<circle id="levelCircleStroke" r="80" cx="100" cy="100" fill="none" #f25346 stroke="#68c3c0" stroke-width="14px" stroke-dasharray="502" />
-						</svg>
-					</div>
-					<div class="score__content" id="dist">
-						<div class="score__label">distance</div>
-						<div class="score__value score__value--dist" id="distValue">000</div>
-					</div>
-					<div class="score__content" id="energy">
-						<div class="score__label">energy</div>
-						<div class="score__value score__value--energy" id="energyValue">
-							<div class="energy-bar" id="energyBar"></div>
-						</div>
+</head>
+
+<body>
+	<div class="game-holder" id="gameHolder">
+		<div class="header">
+			<h1><span>super</span>Helpers</h1>
+			<h2>Bee Rescue Mission</h2>
+			<div class="score" id="score">
+				<div class="score__content" id="level">
+					<div class="score__label">level</div>
+					<div class="score__value score__value--level" id="levelValue">1</div>
+					<svg class="level-circle" id="levelCircle" viewbox="0 0 200 200">
+						<circle id="levelCircleBgr" r="80" cx="100" cy="100" fill="none" stroke="#d1b790"
+							stroke-width="24px" />
+						<circle id="levelCircleStroke" r="80" cx="100" cy="100" fill="none" #f25346 stroke="#68c3c0"
+							stroke-width="14px" stroke-dasharray="502" />
+					</svg>
+				</div>
+				<div class="score__content" id="dist">
+					<div class="score__label">distance</div>
+					<div class="score__value score__value--dist" id="distValue">000</div>
+				</div>
+				<div class="score__content" id="energy">
+					<div class="score__label">energy</div>
+					<div class="score__value score__value--energy" id="energyValue">
+						<div class="energy-bar" id="energyBar"></div>
 					</div>
 				</div>
 			</div>
-			<div class="world" id="world"></div>
-			<div class="message message--replay" id="replayMessage">Click to Replay</div>
-			<div class="message message--instructions" id="instructions">Grab the blue pills<span>avoid the red ones</span></div>
+			<div class="audio-controls">
+				<button class="audio-btn" id="toggleAudio">
+					<span class="audio-icon">🔊</span>
+				</button>
+			</div>
 		</div>
-		<!-- Demo links -->
-		<nav class="meta">
-			<a class="codrops-icon codrops-icon--prev" href="http://tympanus.net/Development/Interactive3DMallMap/" title="Previous Demo"><span>Previous Demo</span></a>
-			<a class="codrops-icon codrops-icon--drop" href="http://tympanus.net/codrops/?p=26501" title="Back to the article"><span>Back to the Codrops article</span></a>
-			<a class="demo-link" href="part1.html">Part 1</a>
-			<a class="demo-link" href="part2.html">Part 2</a>
-		</nav>
-	</body>
+		<div class="world" id="world"></div>
+		<div class="message message--replay" id="replayMessage">Click to restart</div>
+		<div class="message message--instructions" id="instructions">Collect blue flowers<span>Avoid dangerous
+				items</span>
+		</div>
+		<div class="message message--pointer-lock" id="pointerLockHint">Press ESC to unlock mouse</div>
+
+		<!-- Start Game Screen -->
+		<div class="start-screen" id="startScreen">
+			<div class="start-content">
+				<h1 class="start-title">Super Helpers</h1>
+				<h2 class="start-subtitle">🌸 Help bees collect flowers and save the environment together! 🌸</h2>
+				<button class="start-button" id="startButton">Start Mission</button>
+				<p class="start-tip">Click on the game to lock your pointer for better control</p>
+			</div>
+		</div>
+	</div>
+	<!-- Import via Vite -->
+	<script type="module" src="/main.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const startScreen = document.getElementById('startScreen');
+			const startButton = document.getElementById('startButton');
+
+			// Hide game elements until start button is clicked
+			document.querySelector('.header').style.display = 'none';
+			document.getElementById('replayMessage').style.display = 'none';
+			document.getElementById('instructions').style.display = 'none';
+
+			startButton.addEventListener('click', function () {
+				// Hide start screen with fade out effect
+				startScreen.style.transition = 'opacity 1s ease-out';
+				startScreen.style.opacity = '0';
+				setTimeout(() => {
+					startScreen.style.display = 'none';
+					// Show game elements
+					document.querySelector('.header').style.display = 'block';
+					document.getElementById('instructions').style.display = 'block';
+					// Trigger game initialization (defined in main.js)
+					window.dispatchEvent(new Event('gamestart'));
+				}, 1000);
+			});
+		});
+	</script>
+</body>
+
 </html>

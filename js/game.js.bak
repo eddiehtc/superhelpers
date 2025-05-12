@@ -12,130 +12,6 @@ var Colors = {
   beeBlack: 0x000000,
   lightYellow: 0xffed7f,
   cheekPink: 0xff9999,
-  // Super Helpers theme colors
-  flowerBlue: 0x4086ff,
-  flowerPink: 0xff86c0,
-  flowerStem: 0x4caf50,
-  flowerYellow: 0xffeb3b,
-  // 繪本場景顏色
-  grassGreen: 0x7cba6c, // 草地綠色
-  treeBark: 0x8b5a2b, // 樹幹棕色
-  leafGreen: 0x4caf50, // 樹葉綠色
-};
-
-// 音频对象
-var Audio = {
-  backgroundMusic: null,
-  collectSound: null,
-  dangerSound: null,
-  initialized: false,
-  muted: false,
-
-  // 初始化音频
-  init: function () {
-    if (this.initialized) return;
-
-    // 加载用户偏好的音频设置
-    if (typeof Storage !== 'undefined') {
-      var savedMuted = localStorage.getItem('gameMuted');
-      if (savedMuted !== null) {
-        this.muted = savedMuted === 'true';
-      }
-    }
-
-    // 创建音频对象
-    this.backgroundMusic = new Howl({
-      src: ['./audio/background-music.mp3'],
-      loop: true,
-      volume: 0.5,
-      autoplay: false,
-    });
-
-    this.collectSound = new Howl({
-      src: ['./audio/collect-sound.mp3'],
-      volume: 0.7,
-      autoplay: false,
-    });
-
-    this.dangerSound = new Howl({
-      src: ['./audio/danger-sound.mp3'],
-      volume: 0.6, // 降低音量，让警报声不那么突兀
-      sprite: {
-        main: [0, 2000], // 只播放前2秒
-        alt: [0, 800], // 备选音效只播放前0.8秒
-      },
-      autoplay: false,
-    });
-
-    // 应用静音设置
-    Howler.mute(this.muted);
-
-    // 设置音频控制
-    this.setupAudioControls();
-
-    this.initialized = true;
-  },
-
-  // 设置音频控制
-  setupAudioControls: function () {
-    var toggleAudioBtn = document.getElementById('toggleAudio');
-
-    if (toggleAudioBtn) {
-      var audioIcon = toggleAudioBtn.querySelector('.audio-icon');
-
-      // 确保按钮显示正确的图标
-      if (audioIcon) {
-        audioIcon.textContent = this.muted ? '🔇' : '🔊';
-      }
-
-      toggleAudioBtn.addEventListener('click', function () {
-        Audio.toggleMute();
-        audioIcon.textContent = Audio.muted ? '🔇' : '🔊';
-      });
-    }
-  },
-
-  // 切换静音状态
-  toggleMute: function () {
-    this.muted = !this.muted;
-    Howler.mute(this.muted);
-
-    // 保存用户偏好
-    if (typeof Storage !== 'undefined') {
-      localStorage.setItem('gameMuted', this.muted);
-    }
-
-    return this.muted;
-  },
-
-  // 播放背景音乐
-  playBackgroundMusic: function () {
-    if (!this.initialized) this.init();
-    if (!this.backgroundMusic.playing()) {
-      this.backgroundMusic.play();
-    }
-  },
-
-  // 暂停背景音乐
-  pauseBackgroundMusic: function () {
-    if (this.initialized && this.backgroundMusic.playing()) {
-      this.backgroundMusic.pause();
-    }
-  },
-
-  // 播放收集音效
-  playCollectSound: function () {
-    if (!this.initialized) this.init();
-    this.collectSound.play();
-  },
-
-  // 播放危险音效
-  playDangerSound: function () {
-    if (!this.initialized) this.init();
-    // 随机选择主要音效或备选音效，增加游戏的多样性
-    var sound = Math.random() > 0.5 ? 'main' : 'alt';
-    this.dangerSound.play(sound);
-  },
 };
 
 ///////////////
@@ -229,11 +105,6 @@ function resetGame() {
     status: 'playing',
   };
   fieldLevel.innerHTML = Math.floor(game.level);
-
-  // 重启背景音乐
-  if (Audio.initialized) {
-    Audio.playBackgroundMusic();
-  }
 }
 
 //THREEJS RELATED VARIABLES
@@ -253,13 +124,6 @@ var scene,
 var HEIGHT,
   WIDTH,
   mousePos = { x: 0, y: 0 };
-
-// Pointer lock variables
-var isPointerLocked = false;
-var pointerLockSupported =
-  'pointerLockElement' in document ||
-  'mozPointerLockElement' in document ||
-  'webkitPointerLockElement' in document;
 
 //INIT THREE JS, SCREEN AND MOUSE EVENTS
 
@@ -315,29 +179,9 @@ function handleWindowResize() {
 }
 
 function handleMouseMove(event) {
-  if (isPointerLocked) {
-    // In pointer lock mode, use movementX/Y which gives relative motion
-    const movementX =
-      event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-    const movementY =
-      event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-
-    // Adjust sensitivity based on device pixel ratio for consistent feel across devices
-    const sensitivity = 0.0015 * (window.devicePixelRatio || 1);
-
-    // Update mouse position with delta movement
-    mousePos.x += movementX * sensitivity;
-    mousePos.y -= movementY * sensitivity; // Invert Y for natural feel
-
-    // Clamp values to stay within bounds
-    mousePos.x = Math.max(-1, Math.min(1, mousePos.x));
-    mousePos.y = Math.max(-1, Math.min(1, mousePos.y));
-  } else {
-    // Original behavior for non-locked pointer
-    var tx = -1 + (event.clientX / WIDTH) * 2;
-    var ty = 1 - (event.clientY / HEIGHT) * 2;
-    mousePos = { x: tx, y: ty };
-  }
+  var tx = -1 + (event.clientX / WIDTH) * 2;
+  var ty = 1 - (event.clientY / HEIGHT) * 2;
+  mousePos = { x: tx, y: ty };
 }
 
 function handleTouchMove(event) {
@@ -351,9 +195,6 @@ function handleMouseUp(event) {
   if (game.status == 'waitingReplay') {
     resetGame();
     hideReplay();
-  } else if (game.status == 'playing' && !isPointerLocked) {
-    // Lock pointer when clicking on the world during gameplay
-    lockPointer();
   }
 }
 
@@ -412,55 +253,6 @@ var Pilot = function () {
   var faceMat = new THREE.MeshLambertMaterial({ color: Colors.pink });
   var face = new THREE.Mesh(faceGeom, faceMat);
   this.mesh.add(face);
-
-  // 添加黄色帽子 - 更大更明显
-  var hatGeom = new THREE.CylinderGeometry(8, 10, 8, 8);
-  var hatMat = new THREE.MeshPhongMaterial({
-    color: 0xffdd00, // 更亮的黄色
-    flatShading: true,
-    shininess: 30, // 增加光泽
-  });
-  var hat = new THREE.Mesh(hatGeom, hatMat);
-  hat.position.y = 10; // 更高的位置
-  hat.position.x = 0;
-  hat.position.z = 0;
-  hat.rotation.x = Math.PI * 0.05; // 稍微向前倾斜
-  this.mesh.add(hat);
-
-  // 添加更大的帽子檐
-  var brimGeom = new THREE.CylinderGeometry(11, 11, 1.5, 8);
-  var brimMat = new THREE.MeshPhongMaterial({
-    color: 0xffdd00, // 匹配帽子的颜色
-    flatShading: true,
-  });
-  var brim = new THREE.Mesh(brimGeom, brimMat);
-  brim.position.y = 6; // 帽子底部
-  brim.position.x = 0;
-  brim.position.z = 0;
-  this.mesh.add(brim);
-
-  // 添加醒目的帽子装饰带
-  var bandGeom = new THREE.CylinderGeometry(8.1, 8.1, 2, 8);
-  var bandMat = new THREE.MeshPhongMaterial({
-    color: Colors.beeBlack, // 黑色装饰带
-    flatShading: true,
-  });
-  var band = new THREE.Mesh(bandGeom, bandMat);
-  band.position.y = 8; // 帽子中部
-  this.mesh.add(band);
-
-  // 添加帽子顶部装饰
-  var topDecorGeom = new THREE.SphereGeometry(2, 8, 8);
-  var topDecorMat = new THREE.MeshPhongMaterial({
-    color: 0xffdd00, // 匹配帽子的颜色
-    flatShading: false,
-    shininess: 60, // 高光泽
-  });
-  var topDecor = new THREE.Mesh(topDecorGeom, topDecorMat);
-  topDecor.position.y = 14; // 帽子顶部
-  topDecor.position.x = 0;
-  topDecor.position.z = 0;
-  this.mesh.add(topDecor);
 
   var hairGeom = new THREE.BoxGeometry(4, 4, 4);
   var hairMat = new THREE.MeshLambertMaterial({ color: Colors.brown });
@@ -551,22 +343,22 @@ var AirPlane = function () {
 
 // Create bee model (strictly follow reference image)
 AirPlane.prototype.createBeeModel = function () {
-  // Color definitions
-  Colors.beeYellow = 0xffe066; // Bright yellow
-  Colors.beeBlack = 0x222222; // Deep black
-  Colors.beeOrange = 0xffb13b; // Orange stripes
-  Colors.cheekPink = 0xffb6b6; // Pink
+  // 颜色定义
+  Colors.beeYellow = 0xffe066; // 明亮黄
+  Colors.beeBlack = 0x222222; // 深黑
+  Colors.beeOrange = 0xffb13b; // 橙色条纹
+  Colors.cheekPink = 0xffb6b6; // 粉色
   Colors.eyeBlack = 0x222222;
   Colors.eyeHighlight = 0xffffff;
   Colors.wingWhite = 0xffffff;
   Colors.wingBlue = 0xb3e6ff;
 
-  // Main body parameters
+  // 主体参数
   const bodyRadius = 22;
   const beeGroup = new THREE.Object3D();
   this.mesh.add(beeGroup);
 
-  // --- Body sphere ---
+  // --- 身体球体 ---
   const bodyGeom = new THREE.SphereGeometry(bodyRadius, 48, 48);
   const bodyMat = new THREE.MeshPhongMaterial({
     color: Colors.beeYellow,
@@ -575,8 +367,8 @@ AirPlane.prototype.createBeeModel = function () {
   const body = new THREE.Mesh(bodyGeom, bodyMat);
   beeGroup.add(body);
 
-  // --- Black wide rings ---
-  // Front black ring
+  // --- 黑色宽条环绕 ---
+  // 前黑环
   const frontRingGeom = new THREE.TorusGeometry(
     bodyRadius * 0.98,
     bodyRadius * 0.22,
@@ -591,12 +383,12 @@ AirPlane.prototype.createBeeModel = function () {
   frontRing.rotation.y = Math.PI / 2;
   frontRing.position.x = bodyRadius * 0.18;
   beeGroup.add(frontRing);
-  // Back black ring
+  // 后黑环
   const backRing = frontRing.clone();
   backRing.position.x = -bodyRadius * 0.18;
   beeGroup.add(backRing);
 
-  // --- Orange stripes ---
+  // --- 橙色条纹 ---
   const orangeRingGeom = new THREE.TorusGeometry(
     bodyRadius * 0.98,
     bodyRadius * 0.18,
@@ -611,23 +403,23 @@ AirPlane.prototype.createBeeModel = function () {
   orangeRing.rotation.y = Math.PI / 2;
   beeGroup.add(orangeRing);
 
-  // --- Eyes ---
+  // --- 眼睛 ---
   const eyeRadius = bodyRadius * 0.19;
   const eyeGeom = new THREE.SphereGeometry(eyeRadius, 24, 24);
-  eyeGeom.scale(1, 1.35, 1); // Oval shape
+  eyeGeom.scale(1, 1.35, 1); // 椭圆
   const eyeMat = new THREE.MeshPhongMaterial({
     color: Colors.eyeBlack,
     shininess: 80,
   });
-  // Left eye
+  // 左眼
   const eyeL = new THREE.Mesh(eyeGeom, eyeMat);
   eyeL.position.set(bodyRadius * 0.82, bodyRadius * 0.18, bodyRadius * 0.48);
   beeGroup.add(eyeL);
-  // Right eye
+  // 右眼
   const eyeR = eyeL.clone();
   eyeR.position.z = -eyeL.position.z;
   beeGroup.add(eyeR);
-  // Eye highlight
+  // 眼睛高光
   const highlightGeom = new THREE.SphereGeometry(eyeRadius * 0.32, 12, 12);
   const highlightMat = new THREE.MeshBasicMaterial({
     color: Colors.eyeHighlight,
@@ -638,7 +430,7 @@ AirPlane.prototype.createBeeModel = function () {
   const highlightR = highlightL.clone();
   eyeR.add(highlightR);
 
-  // --- Smile ---
+  // --- 微笑 ---
   const smileCurve = new THREE.CatmullRomCurve3([
     new THREE.Vector3(bodyRadius * 0.18, -bodyRadius * 0.18, bodyRadius * 0.18),
     new THREE.Vector3(bodyRadius * 0.32, -bodyRadius * 0.28, 0),
@@ -660,7 +452,7 @@ AirPlane.prototype.createBeeModel = function () {
   smile.position.x = bodyRadius * 0.7;
   beeGroup.add(smile);
 
-  // --- Cheek ---
+  // --- 脸颊 ---
   const cheekGeom = new THREE.SphereGeometry(bodyRadius * 0.13, 16, 16);
   const cheekMat = new THREE.MeshPhongMaterial({
     color: Colors.cheekPink,
@@ -674,10 +466,10 @@ AirPlane.prototype.createBeeModel = function () {
   cheekR.position.z = -cheekL.position.z;
   beeGroup.add(cheekR);
 
-  // --- Antenna ---
+  // --- 触角 ---
   const antennaRadius = bodyRadius * 0.06;
   const antennaLength = bodyRadius * 0.95;
-  // Curve
+  // 曲线
   const antennaCurve = new THREE.CatmullRomCurve3([
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(antennaLength * 0.18, antennaLength * 0.5, 0),
@@ -692,7 +484,7 @@ AirPlane.prototype.createBeeModel = function () {
     false
   );
   const antennaMat = new THREE.MeshPhongMaterial({ color: Colors.beeBlack });
-  // Left antenna
+  // 左触角
   const antennaLGroup = new THREE.Object3D();
   const antennaL = new THREE.Mesh(antennaGeom, antennaMat);
   const antennaBallL = new THREE.Mesh(
@@ -710,105 +502,105 @@ AirPlane.prototype.createBeeModel = function () {
     bodyRadius * 0.32
   );
   beeGroup.add(antennaLGroup);
-  // Right antenna
+  // 右触角
   const antennaRGroup = antennaLGroup.clone();
   antennaRGroup.position.z = -antennaLGroup.position.z;
   beeGroup.add(antennaRGroup);
 
-  // --- Wings ---
+  // --- 翅膀 ---
   const wingShape = new THREE.Shape();
-  const wingW = bodyRadius * 1.4; // Wider
-  const wingH = bodyRadius * 2.0; // Taller
+  const wingW = bodyRadius * 1.4; // 更宽
+  const wingH = bodyRadius * 2.0; // 更高
   wingShape.ellipse(0, 0, wingW, wingH, 0, Math.PI * 2);
   const wingGeom = new THREE.ShapeGeometry(wingShape);
   const wingMat = new THREE.MeshPhongMaterial({
     color: Colors.wingWhite,
     transparent: true,
-    opacity: 0.75, // Increased opacity
+    opacity: 0.75, // 增加不透明度
     shininess: 100,
     side: THREE.DoubleSide,
   });
-  // Left main wing
+  // 左主翅膀
   const wingL = new THREE.Mesh(wingGeom, wingMat);
-  wingL.position.set(-bodyRadius * 0.1, bodyRadius * 1.3, bodyRadius * 1.05); // Adjusted position
+  wingL.position.set(-bodyRadius * 0.1, bodyRadius * 1.3, bodyRadius * 1.05); // 调整位置
   wingL.rotation.x = -Math.PI / 2.3;
   wingL.rotation.y = Math.PI / 5;
-  wingL.scale.set(0.45, 0.45, 0.45); // Larger wings
+  wingL.scale.set(0.45, 0.45, 0.45); // 更大翅膀
   beeGroup.add(wingL);
-  // Blue highlight
+  // 蓝色高光
   const wingHLGeom = new THREE.CircleGeometry(wingW * 0.25, 16);
   const wingHLMat = new THREE.MeshBasicMaterial({
     color: Colors.wingBlue,
     transparent: true,
-    opacity: 0.6, // Increased opacity
+    opacity: 0.6, // 增加不透明度
   });
   const wingHL = new THREE.Mesh(wingHLGeom, wingHLMat);
   wingHL.position.set(wingW * 0.2, wingH * 0.2, 0.1);
   wingL.add(wingHL);
-  // Right main wing
+  // 右主翅膀
   const wingR = wingL.clone();
   wingR.position.z = -wingL.position.z;
   wingR.rotation.y = -wingL.rotation.y;
   beeGroup.add(wingR);
-  // Animation references
+  // 更新动画引用
   this.wings = { left: [wingL], right: [wingR] };
   this.antennaLGroup = antennaLGroup;
   this.antennaRGroup = antennaRGroup;
   this.body = body;
-  // Animation parameters
+  // 动画参数
   this.wingsRotation = 0;
   this.bouncingValue = 0;
 };
 
-// Bee animation (gentle)
+// Bee动画（轻柔）
 AirPlane.prototype.updateWings = function () {
   if (!window.isBeeMode) return;
-  this.wingsRotation += 0.8; // Faster wing flapping speed
+  this.wingsRotation += 0.8; // 更快的翅膀扇动速度
 
-  // Get wing base position
+  // 获取翅膀基础位置
   const bodyRadius = 22;
   const baseYPos = bodyRadius * 1.3;
 
-  // Wing flapping - increase swing amplitude, but reset base position each frame to avoid drift
+  // 翅膀扇动 - 增加摆动幅度，但每帧重新设置基本位置以避免漂移
   if (this.wings && this.wings.left && this.wings.left[0]) {
     const wingL = this.wings.left[0];
 
-    // Reset to base position
+    // 重置到基本位置
     wingL.position.set(-bodyRadius * 0.1, baseYPos, bodyRadius * 1.05);
 
-    // Apply rotation - more exaggerated animation effects
+    // 应用旋转 - 更夸张的动画效果
     wingL.rotation.z = Math.sin(this.wingsRotation) * 0.65;
     wingL.rotation.x =
       -Math.PI / 2.3 + Math.cos(this.wingsRotation * 0.5) * 0.2;
     wingL.rotation.y = Math.PI / 5 + Math.sin(this.wingsRotation * 0.7) * 0.1;
 
-    // Add position changes, relative to base position
+    // 添加位置变化，相对于基本位置
     wingL.position.y += Math.sin(this.wingsRotation) * 2.0;
   }
 
   if (this.wings && this.wings.right && this.wings.right[0]) {
     const wingR = this.wings.right[0];
 
-    // Reset to base position
+    // 重置到基本位置
     wingR.position.set(-bodyRadius * 0.1, baseYPos, -bodyRadius * 1.05);
 
-    // Apply rotation - more exaggerated animation effects
+    // 应用旋转 - 更夸张的动画效果
     wingR.rotation.z = Math.sin(this.wingsRotation) * 0.65;
     wingR.rotation.x =
       -Math.PI / 2.3 + Math.cos(this.wingsRotation * 0.5) * 0.2;
     wingR.rotation.y = -Math.PI / 5 - Math.sin(this.wingsRotation * 0.7) * 0.1;
 
-    // Add position changes, relative to base position
+    // 添加位置变化，相对于基本位置
     wingR.position.y += Math.sin(this.wingsRotation) * 2.0;
   }
 
-  // Body floating animation
+  // 身体浮动动画
   this.bouncingValue += 0.03;
   this.mesh.position.y += Math.sin(this.bouncingValue) * 0.08;
 
-  // Antenna animation
+  // 触角动画
   if (this.antennaLGroup && this.antennaRGroup) {
-    const wiggle = 0.15; // Increased antenna swing amplitude
+    const wiggle = 0.15; // 增加触角摆动幅度
     this.antennaLGroup.rotation.x =
       -Math.PI / 8 + Math.sin(this.bouncingValue * 1.2) * wiggle;
     this.antennaRGroup.rotation.x =
@@ -875,15 +667,15 @@ var Sea = function () {
 
   this.waves = vertices;
 
-  // 修改為綠色地面 - 使用更明顯的綠色
   var mat = new THREE.MeshPhongMaterial({
-    color: 0x4caf50, // 更鮮明的綠色
-    transparent: false,
+    color: Colors.blue,
+    transparent: true,
+    opacity: 0.8,
     flatShading: true,
   });
 
   this.mesh = new THREE.Mesh(geom, mat);
-  this.mesh.name = 'ground';
+  this.mesh.name = 'waves';
   this.mesh.receiveShadow = true;
 };
 
@@ -906,125 +698,49 @@ Sea.prototype.moveWaves = function () {
 var Cloud = function () {
   this.mesh = new THREE.Object3D();
   this.mesh.name = 'cloud';
-
-  // 使用球體代替方塊，創建更柔和的外觀
-  var geom = new THREE.SphereGeometry(15, 12, 12); // 增加細分數量以獲得更平滑的球體
+  var geom = new THREE.BoxGeometry(20, 20, 20);
   var mat = new THREE.MeshPhongMaterial({
     color: Colors.white,
-    transparent: true,
-    opacity: 0.6, // 降低不透明度使其更輕盈
-    flatShading: false,
-    shininess: 0,
+    flatShading: true,
   });
 
-  // 創建雲朵的主體部分
-  var nBlocs = 3 + Math.floor(Math.random() * 4); // 增加更多的球體
+  //*
+  var nBlocs = 3 + Math.floor(Math.random() * 3);
   for (var i = 0; i < nBlocs; i++) {
     var m = new THREE.Mesh(geom.clone(), mat);
-
-    // 更自然的分布
-    var angle = (i / nBlocs) * Math.PI * 2;
-    var radius = 7 + Math.random() * 7; // 更大的分布範圍
-    m.position.x = Math.cos(angle) * radius;
-    m.position.y = Math.sin(angle) * radius * 0.5;
-    m.position.z = Math.random() * 7 - 3.5; // 前後分布也更豐富
-
-    // 各種大小的球體
-    var s = 0.3 + Math.random() * 0.6;
-    m.scale.set(
-      s * (1.2 + Math.random() * 0.3),
-      s * (0.7 + Math.random() * 0.3),
-      s * (1.2 + Math.random() * 0.3)
-    );
-
+    m.position.x = i * 15;
+    m.position.y = Math.random() * 10;
+    m.position.z = Math.random() * 10;
     m.rotation.z = Math.random() * Math.PI * 2;
     m.rotation.y = Math.random() * Math.PI * 2;
-
-    // 儲存原始位置用於動畫
-    m.originalX = m.position.x;
-    m.originalY = m.position.y;
-    m.originalZ = m.position.z;
-    m.pulseSpeed = 0.5 + Math.random() * 0.8; // 每個部分的脈動速度不同
-
+    var s = 0.1 + Math.random() * 0.9;
+    m.scale.set(s, s, s);
     this.mesh.add(m);
     m.castShadow = true;
     m.receiveShadow = true;
   }
-
-  // 添加整體的漂浮動畫參數
-  this.angleX = Math.random() * Math.PI * 2;
-  this.angleY = Math.random() * Math.PI * 2;
-  this.angleZ = Math.random() * Math.PI * 2;
-  this.speed = 0.5 + Math.random() * 0.5;
+  //*/
 };
 
 Cloud.prototype.rotate = function () {
-  // 使雲朵旋轉更平滑
-  var time = Date.now() * 0.0001;
-
-  // 整體雲朵緩慢旋轉
-  this.angleX += 0.001 * this.speed;
-  this.angleY += 0.0015 * this.speed;
-  this.angleZ += 0.001 * this.speed;
-
-  this.mesh.rotation.x = Math.sin(this.angleX) * 0.1;
-  this.mesh.rotation.y = Math.sin(this.angleY) * 0.1;
-  this.mesh.rotation.z = Math.sin(this.angleZ) * 0.1;
-
   var l = this.mesh.children.length;
   for (var i = 0; i < l; i++) {
     var m = this.mesh.children[i];
-
-    // 各部分獨立的微動
-    if (m.originalY !== undefined) {
-      // 水平方向輕微擺動
-      m.position.x = m.originalX + Math.sin(time * m.pulseSpeed + i) * 0.8;
-      // 垂直方向輕微浮動
-      m.position.y =
-        m.originalY + Math.sin(time * m.pulseSpeed + i + Math.PI / 2) * 0.6;
-      // 深度方向也有微動
-      if (m.originalZ !== undefined) {
-        m.position.z =
-          m.originalZ + Math.sin(time * m.pulseSpeed * 0.7 + i) * 0.5;
-      }
-
-      // 各部分微小旋轉
-      m.rotation.x += 0.001 * (i + 1);
-      m.rotation.y += 0.001 * (i + 1);
-      m.rotation.z += 0.001 * (i + 1);
-    }
+    m.rotation.z += Math.random() * 0.005 * (i + 1);
+    m.rotation.y += Math.random() * 0.002 * (i + 1);
   }
 };
 
 var Ennemy = function () {
-  // Create garbage/pollution as dangerous objects
-  this.mesh = new THREE.Object3D();
-
-  // Main body - trash bag
-  var trashGeom = new THREE.IcosahedronGeometry(8, 1);
-  var trashMat = new THREE.MeshPhongMaterial({
+  var geom = new THREE.TetrahedronGeometry(8, 2);
+  var mat = new THREE.MeshPhongMaterial({
     color: Colors.red,
     shininess: 0,
     specular: 0xffffff,
     flatShading: true,
   });
-  var trashBag = new THREE.Mesh(trashGeom, trashMat);
-  trashBag.scale.set(1, 1.2, 0.8);
-  trashBag.castShadow = true;
-  this.mesh.add(trashBag);
-
-  // Add warning sign to indicate danger
-  var warningGeom = new THREE.TorusGeometry(3, 1, 8, 16);
-  var warningMat = new THREE.MeshPhongMaterial({
-    color: Colors.black,
-    shininess: 0,
-    flatShading: true,
-  });
-  var warning = new THREE.Mesh(warningGeom, warningMat);
-  warning.position.z = 5;
-  warning.rotation.x = Math.PI / 2;
-  this.mesh.add(warning);
-
+  this.mesh = new THREE.Mesh(geom, mat);
+  this.mesh.castShadow = true;
   this.angle = 0;
   this.dist = 0;
 };
@@ -1081,7 +797,7 @@ EnnemiesHolder.prototype.rotateEnnemies = function () {
       particlesHolder.spawnParticles(
         ennemy.mesh.position.clone(),
         15,
-        Colors.red, // Keep red particles to indicate danger
+        Colors.red,
         3
       );
 
@@ -1092,8 +808,6 @@ EnnemiesHolder.prototype.rotateEnnemies = function () {
       ambientLight.intensity = 2;
 
       removeEnergy();
-      // 播放危险音效
-      Audio.playDangerSound();
       i--;
     } else if (ennemy.angle > Math.PI) {
       ennemiesPool.unshift(this.ennemiesInUse.splice(i, 1)[0]);
@@ -1170,40 +884,15 @@ ParticlesHolder.prototype.spawnParticles = function (
 };
 
 var Coin = function () {
-  // Create flower object instead of pill
-  this.mesh = new THREE.Object3D();
-
-  // Petals
-  var petalGeom = new THREE.CircleGeometry(5, 8);
-  var petalMat = new THREE.MeshPhongMaterial({
-    color: Colors.flowerBlue,
-    shininess: 10,
+  var geom = new THREE.TetrahedronGeometry(5, 0);
+  var mat = new THREE.MeshPhongMaterial({
+    color: 0x009999,
+    shininess: 0,
+    specular: 0xffffff,
     flatShading: true,
   });
-
-  // Create 8 petals around the center
-  for (var i = 0; i < 8; i++) {
-    var petal = new THREE.Mesh(petalGeom, petalMat);
-    var angle = (i / 8) * Math.PI * 2;
-    petal.position.x = Math.cos(angle) * 3;
-    petal.position.z = Math.sin(angle) * 3;
-    petal.rotation.x = Math.PI / 4;
-    petal.rotation.y = angle;
-    this.mesh.add(petal);
-  }
-
-  // Flower center
-  var centerGeom = new THREE.SphereGeometry(2.5, 8, 8);
-  var centerMat = new THREE.MeshPhongMaterial({
-    color: Colors.flowerYellow,
-    shininess: 10,
-    flatShading: false,
-  });
-  var center = new THREE.Mesh(centerGeom, centerMat);
-  this.mesh.add(center);
-
+  this.mesh = new THREE.Mesh(geom, mat);
   this.mesh.castShadow = true;
-  this.mesh.receiveShadow = true;
   this.angle = 0;
   this.dist = 0;
 };
@@ -1265,12 +954,10 @@ CoinsHolder.prototype.rotateCoins = function () {
       particlesHolder.spawnParticles(
         coin.mesh.position.clone(),
         5,
-        Colors.flowerBlue,
+        0x009999,
         0.8
       );
       addEnergy();
-      // 播放收集音效
-      Audio.playCollectSound();
       i--;
     } else if (coin.angle > Math.PI) {
       this.coinsPool.unshift(this.coinsInUse.splice(i, 1)[0]);
@@ -1377,18 +1064,7 @@ function loop() {
     game.baseSpeed +=
       (game.targetBaseSpeed - game.baseSpeed) * deltaTime * 0.02;
     game.speed = game.baseSpeed * game.planeSpeed;
-
-    // 确保背景音乐正在播放
-    Audio.playBackgroundMusic();
   } else if (game.status == 'gameover') {
-    // Unlock pointer when game is over
-    if (isPointerLocked) {
-      unlockPointer();
-    }
-
-    // 暂停背景音乐
-    Audio.pauseBackgroundMusic();
-
     game.speed *= 0.99;
     airplane.mesh.rotation.z +=
       (-Math.PI / 2 - airplane.mesh.rotation.z) * 0.0002 * deltaTime;
@@ -1401,13 +1077,6 @@ function loop() {
       game.status = 'waitingReplay';
     }
   } else if (game.status == 'waitingReplay') {
-    // Ensure pointer is unlocked in waiting state
-    if (isPointerLocked) {
-      unlockPointer();
-    }
-
-    // 确保背景音乐已暂停
-    Audio.pauseBackgroundMusic();
   }
 
   if (airplane && airplane.propeller && airplane.propeller.rotation) {
@@ -1574,30 +1243,11 @@ function init(event) {
   createEnnemies();
   createParticles();
 
-  // 完全替換createTrees函數
-  console.log('Creating trees...');
-  createTrees();
-  console.log('Trees initialization complete');
-
-  // 設置蜜蜂模式
-  window.isBeeMode = true;
-
-  // Initialize audio
-  Audio.init();
-
   // Event listeners
   document.addEventListener('mousemove', handleMouseMove, false);
   document.addEventListener('touchmove', handleTouchMove, false);
   document.addEventListener('mouseup', handleMouseUp, false);
   document.addEventListener('touchend', handleTouchEnd, false);
-
-  // Setup pointer lock
-  setupPointerLock();
-
-  // Listen for game start event to play background music
-  window.addEventListener('gamestart', function () {
-    Audio.playBackgroundMusic();
-  });
 
   loop();
 }
@@ -1607,188 +1257,3 @@ function init(event) {
 
 // Export init function to global scope for main.js to call
 window.init = init;
-
-// Pointer Lock Functions
-function setupPointerLock() {
-  if (pointerLockSupported) {
-    // Setup the click event listener for the container
-    container.addEventListener('click', lockPointer);
-
-    // Pointer lock change event listeners
-    document.addEventListener('pointerlockchange', pointerLockChange, false);
-    document.addEventListener('mozpointerlockchange', pointerLockChange, false);
-    document.addEventListener(
-      'webkitpointerlockchange',
-      pointerLockChange,
-      false
-    );
-
-    // Pointer lock error event listeners
-    document.addEventListener('pointerlockerror', pointerLockError, false);
-    document.addEventListener('mozpointerlockerror', pointerLockError, false);
-    document.addEventListener(
-      'webkitpointerlockerror',
-      pointerLockError,
-      false
-    );
-
-    // Add pointer lock instructions
-    const instructions = document.createElement('div');
-    instructions.id = 'pointer-lock-instructions';
-    instructions.innerHTML = 'Click on the game to lock pointer';
-    instructions.style.position = 'absolute';
-    instructions.style.top = '10px';
-    instructions.style.left = '10px';
-    instructions.style.color = 'white';
-    instructions.style.backgroundColor = 'rgba(0,0,0,0.5)';
-    instructions.style.padding = '5px 10px';
-    instructions.style.borderRadius = '5px';
-    instructions.style.pointerEvents = 'none';
-    instructions.style.display = 'none';
-    container.parentNode.appendChild(instructions);
-
-    // Show instructions once game starts
-    window.addEventListener('gamestart', function () {
-      if (!isPointerLocked) {
-        instructions.style.display = 'block';
-      }
-    });
-  }
-}
-
-function lockPointer() {
-  if (pointerLockSupported && game.status === 'playing') {
-    container.requestPointerLock =
-      container.requestPointerLock ||
-      container.mozRequestPointerLock ||
-      container.webkitRequestPointerLock;
-    container.requestPointerLock();
-  }
-}
-
-function unlockPointer() {
-  if (pointerLockSupported) {
-    document.exitPointerLock =
-      document.exitPointerLock ||
-      document.mozExitPointerLock ||
-      document.webkitExitPointerLock;
-    document.exitPointerLock();
-  }
-}
-
-function pointerLockChange() {
-  const instructions = document.getElementById('pointer-lock-instructions');
-  const pointerLockHint = document.getElementById('pointerLockHint');
-  const worldContainer = document.getElementById('world');
-
-  if (
-    document.pointerLockElement === container ||
-    document.mozPointerLockElement === container ||
-    document.webkitPointerLockElement === container
-  ) {
-    isPointerLocked = true;
-    if (instructions) instructions.style.display = 'none';
-    if (pointerLockHint) {
-      pointerLockHint.classList.add('visible');
-      setTimeout(() => {
-        pointerLockHint.classList.remove('visible');
-      }, 3000); // Hide after 3 seconds
-    }
-    if (worldContainer) worldContainer.classList.add('pointer-locked');
-
-    // Add escape key listener to unlock
-    document.addEventListener('keydown', handleEscapeKey, false);
-  } else {
-    isPointerLocked = false;
-    if (instructions && game.status === 'playing')
-      instructions.style.display = 'block';
-    if (pointerLockHint) pointerLockHint.classList.remove('visible');
-    if (worldContainer) worldContainer.classList.remove('pointer-locked');
-
-    // Remove escape key listener
-    document.removeEventListener('keydown', handleEscapeKey, false);
-  }
-}
-
-function pointerLockError() {
-  console.error('Pointer lock error');
-}
-
-function handleEscapeKey(e) {
-  if (e.keyCode === 27) {
-    // Escape key
-    unlockPointer();
-  }
-}
-
-// 添加樹木類型 - 更鮮明的顏色和更簡單的結構
-var Tree = function () {
-  this.mesh = new THREE.Object3D();
-
-  // 樹幹 - 更粗更高
-  var trunkGeom = new THREE.CylinderGeometry(5, 8, 60, 8);
-  var trunkMat = new THREE.MeshPhongMaterial({
-    color: 0x8b4513, // 棕色
-    flatShading: true,
-    shininess: 0,
-  });
-  var trunk = new THREE.Mesh(trunkGeom, trunkMat);
-  trunk.position.y = 30; // 樹幹高度
-  trunk.castShadow = true;
-  trunk.receiveShadow = true;
-  this.mesh.add(trunk);
-
-  // 樹冠 - 更大更明顯
-  var crownGeom = new THREE.SphereGeometry(25, 16, 16);
-  var crownMat = new THREE.MeshPhongMaterial({
-    color: 0x2e8b57, // 海藍寶石綠
-    flatShading: true,
-    shininess: 0,
-  });
-  var crown = new THREE.Mesh(crownGeom, crownMat);
-  crown.position.y = 70; // 樹冠位置
-  crown.castShadow = true;
-  this.mesh.add(crown);
-
-  // 添加第二層樹冠
-  var crown2 = new THREE.Mesh(crownGeom, crownMat);
-  crown2.position.y = 50;
-  crown2.scale.set(0.8, 0.8, 0.8);
-  crown2.castShadow = true;
-  this.mesh.add(crown2);
-};
-
-// 完全替換createTrees函數
-function createTrees() {
-  console.log('Creating trees...');
-
-  // 在遊戲開始時創建的半徑，因為game.seaRadius是一個常數
-  const groundY = -game.seaRadius;
-  console.log('Ground level Y position:', groundY);
-
-  // 建立一個非常大的樹在正前方
-  var mainTree = new Tree();
-  mainTree.mesh.position.set(0, groundY, -300); // 正前方，與地面齊平
-  mainTree.mesh.scale.set(5, 5, 5); // 非常大的樹
-  scene.add(mainTree.mesh);
-  console.log('Large tree added at position:', mainTree.mesh.position);
-
-  // 在前方左右添加4棵樹形成一個圓圈
-  const treePositions = [
-    { x: 150, z: -250 }, // 右前
-    { x: -150, z: -250 }, // 左前
-    { x: 50, z: -150 }, // 近右
-    { x: -50, z: -150 }, // 近左
-  ];
-
-  for (let i = 0; i < treePositions.length; i++) {
-    const pos = treePositions[i];
-    var tree = new Tree();
-    tree.mesh.position.set(pos.x, groundY, pos.z);
-    tree.mesh.scale.set(3, 3, 3);
-    scene.add(tree.mesh);
-    console.log(`Tree ${i + 1} added at position:`, tree.mesh.position);
-  }
-
-  console.log('Total of 5 trees created and added to scene');
-}
