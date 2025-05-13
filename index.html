@@ -1,325 +1,3653 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-	<meta charset="UTF-8" />
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Super Helpers: The Bee Savers | Interactive Game Experience</title>
-	<meta name="description"
-		content="Interactive game experience based on the 'Super Helpers: The Bee Savers' picture book. Help the little bees protect the environment!" />
-	<meta name="keywords"
-		content="super helpers, bee savers, bees, rescue, environment, three.js, webgl, game, 3d, animation" />
-	<link rel="shortcut icon" href="favicon.ico">
-	<link href='https://fonts.googleapis.com/css?family=Playfair+Display:400,700,700italic' rel='stylesheet'
-		type='text/css'>
-	<!-- Import Howler.js audio library -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
-	<!-- CSS will be imported via main.js -->
-	<style>
-		.start-screen {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			align-items: center;
-			background-color: rgba(0, 0, 0, 0);
-			/* Remove original background color */
-			z-index: 10;
-			overflow: hidden;
-			/* Prevent background overflow */
-		}
+  <meta charset="UTF-8">
+  <title>Super Helpers: The Bee Savers | Interactive Storybook</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
 
-		.start-screen::before {
-			content: '';
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			background-image: url('./img/cover.png');
-			/* Use relative path */
-			background-size: cover;
-			background-position: center;
-			background-repeat: no-repeat;
-			opacity: 0.9;
-			/* Increase transparency slightly to make the image clearer */
-			filter: blur(2px) brightness(1.1);
-			/* Fine-tune blur effect and increase brightness */
-			z-index: -1;
-			animation: fadeIn 2s ease-in-out, slowZoom 30s infinite alternate;
-			/* Add slow zoom effect */
-			transform-origin: center;
-		}
+    #videoPreload,
+    #videoPreload2 {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      width: 10px;
+      height: 10px;
+    }
 
-		.start-content {
-			background-color: rgba(0, 0, 0, 0.6);
-			/* Semi-transparent background for content area */
-			padding: 40px;
-			border-radius: 15px;
-			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-			backdrop-filter: blur(8px);
-			/* Enhance glass effect */
-			-webkit-backdrop-filter: blur(8px);
-			/* Safari support */
-			border: 1px solid rgba(255, 255, 255, 0.1);
-			/* Add subtle border */
-			animation: slideUp 1.2s ease-out;
-			/* Content area slide-in effect */
-			max-width: 80%;
-			text-align: center;
-			transition: all 0.5s ease;
-		}
+    /* Skip button style */
+    #skipButton {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      padding: 12px 25px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 25px;
+      font-family: "Microsoft YaHei", "SimHei", Arial, sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
 
-		.start-content:hover {
-			box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
-			transform: translateY(-5px);
-		}
-
-		.start-button {
-			background-color: #f25346;
-			color: white;
-			font-size: 24px;
-			padding: 16px 42px;
-			border: none;
-			border-radius: 50px;
-			/* More rounded button */
-			cursor: pointer;
-			transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-			font-family: 'Playfair Display', serif;
-			margin-top: 30px;
-			position: relative;
-			overflow: hidden;
-			animation: pulse 2s infinite;
-			/* Button pulse effect */
-			box-shadow: 0 6px 20px rgba(242, 83, 70, 0.4);
-			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-			letter-spacing: 1px;
-		}
-
-		.start-button::before {
-			content: '';
-			position: absolute;
-			top: 0;
-			left: -100%;
-			width: 100%;
-			height: 100%;
-			background: linear-gradient(90deg,
-					transparent,
-					rgba(255, 255, 255, 0.2),
-					transparent);
-			transition: all 0.6s;
-		}
-
-		.start-button:hover {
-			background-color: #e6352a;
-			transform: scale(1.1) translateY(-5px);
-			box-shadow: 0 10px 30px rgba(242, 83, 70, 0.6);
-			letter-spacing: 3px;
-		}
-
-		.start-button:hover::before {
-			left: 100%;
-		}
-
-		.start-title {
-			color: white;
-			font-size: 60px;
-			margin-bottom: 20px;
-			font-family: 'Playfair Display', serif;
-			text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
-		}
-
-		.start-subtitle {
-			color: #d8d0d1;
-			font-size: 24px;
-			margin-bottom: 20px;
-			font-family: 'Playfair Display', serif;
-			text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
-		}
-
-		.book-cover {
-			width: 220px;
-			height: 220px;
-			object-fit: cover;
-			border-radius: 10px;
-			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
-			margin-bottom: 20px;
-			transition: transform 0.3s ease;
-			animation: float 3s ease-in-out infinite;
-			/* Floating effect */
-		}
-
-		.book-cover:hover {
-			transform: scale(1.05);
-		}
-
-		@keyframes fadeIn {
-			0% {
-				opacity: 0;
-				filter: blur(10px) brightness(0.8);
-			}
-
-			100% {
-				opacity: 0.9;
-				filter: blur(2px) brightness(1.1);
-			}
-		}
-
-		@keyframes slideUp {
-			0% {
-				transform: translateY(70px) scale(0.95);
-				opacity: 0;
-				filter: blur(5px);
-			}
-
-			70% {
-				filter: blur(1px);
-			}
-
-			100% {
-				transform: translateY(0) scale(1);
-				opacity: 1;
-				filter: blur(0px);
-			}
-		}
-
-		@keyframes float {
-
-			0%,
-			100% {
-				transform: translateY(0);
-			}
-
-			50% {
-				transform: translateY(-10px);
-			}
-		}
-
-		@keyframes pulse {
-			0% {
-				transform: scale(1);
-			}
-
-			50% {
-				transform: scale(1.05);
-			}
-
-			100% {
-				transform: scale(1);
-			}
-		}
-
-		@keyframes slowZoom {
-			0% {
-				transform: scale(1);
-			}
-
-			100% {
-				transform: scale(1.1);
-			}
-		}
-	</style>
-	<!--[if IE]>
-		  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-		<![endif]-->
+    #skipButton:hover {
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #333;
+      transform: scale(1.05);
+    }
+  </style>
 </head>
 
 <body>
-	<div class="game-holder" id="gameHolder">
-		<div class="header">
-			<h1><span>super</span>Helpers</h1>
-			<h2>Bee Rescue Mission</h2>
-			<div class="score" id="score">
-				<div class="score__content" id="level">
-					<div class="score__label">level</div>
-					<div class="score__value score__value--level" id="levelValue">1</div>
-					<svg class="level-circle" id="levelCircle" viewbox="0 0 200 200">
-						<circle id="levelCircleBgr" r="80" cx="100" cy="100" fill="none" stroke="#d1b790"
-							stroke-width="24px" />
-						<circle id="levelCircleStroke" r="80" cx="100" cy="100" fill="none" #f25346 stroke="#68c3c0"
-							stroke-width="14px" stroke-dasharray="502" />
-					</svg>
-				</div>
-				<div class="score__content" id="dist">
-					<div class="score__label">distance</div>
-					<div class="score__value score__value--dist" id="distValue">000</div>
-				</div>
-				<div class="score__content" id="energy">
-					<div class="score__label">energy</div>
-					<div class="score__value score__value--energy" id="energyValue">
-						<div class="energy-bar" id="energyBar"></div>
-					</div>
-				</div>
-			</div>
-			<div class="audio-controls">
-				<button class="audio-btn" id="toggleAudio">
-					<span class="audio-icon">🔊</span>
-				</button>
-			</div>
-		</div>
-		<div class="world" id="world"></div>
-		<div class="message message--replay" id="replayMessage">Click to restart</div>
-		<div class="message message--instructions" id="instructions">Collect blue flowers<span>Avoid dangerous
-				items</span>
-		</div>
-		<div class="message message--pointer-lock" id="pointerLockHint">Press ESC to unlock mouse</div>
+  <!-- Skip button -->
+  <button id="skipButton">Skip Story</button>
 
-		<!-- Start Game Screen -->
-		<div class="start-screen" id="startScreen">
-			<div class="start-content">
-				<h1 class="start-title">Super Helpers</h1>
-				<h2 class="start-subtitle">🌸 Help bees collect flowers and save the environment together! 🌸</h2>
-				<button class="start-button" id="startButton">Start Mission</button>
-				<p class="start-tip">Click on the game to lock your pointer for better control</p>
-			</div>
-		</div>
-	</div>
-	<!-- Import via Vite -->
-	<script type="module" src="/main.js"></script>
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-			const startScreen = document.getElementById('startScreen');
-			const startButton = document.getElementById('startButton');
+  <!-- Preload two videos but hide them -->
+  <video id="videoPreload" preload="auto" muted playsinline>
+    <source src="storytelling/BG-Image.mp4" type="video/mp4">
+  </video>
+  <video id="videoPreload2" preload="auto" muted playsinline>
+    <source src="storytelling/BG-Image-2.mp4" type="video/mp4">
+  </video>
 
-			// Hide game elements until start button is clicked
-			document.querySelector('.header').style.display = 'none';
-			document.getElementById('replayMessage').style.display = 'none';
-			document.getElementById('instructions').style.display = 'none';
+  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.11.5/dist/gsap.min.js"></script>
+  <script>
+    let scene, camera, renderer;
+    let coverMesh, pageMesh, page2Mesh, page3Mesh, page4Mesh, page5Mesh, page6Mesh;
+    let coverVideoElement = null; // Cover video element
+    let coverVideoTexture = null; // Cover video texture
+    let page1VideoElement = null; // Page1 video element
+    let page1VideoTexture = null; // Page1 video texture 
+    let page2VideoElement = null; // Page2 video element
+    let page2VideoTexture = null; // Page2 video texture
+    let page3VideoElement = null; // Page3 video element
+    let page3VideoTexture = null; // Page3 video texture
+    let page4VideoElement = null; // Page4 video element
+    let page4VideoTexture = null; // Page4 video texture
+    let page5VideoElement = null; // Page5 video element
+    let page5VideoTexture = null; // Page5 video texture
+    let page6VideoElement = null; // Page6 video element
+    let page6VideoTexture = null; // Page6 video texture
+    let clock = new THREE.Clock();
+    let camTargetZ = 12;
+    let storyShown = false;
+    let isAnimating = false;
+    let bookContainer;
+    let currentPage = 1;
+    let focusedPage = null;
+    let originalPositions = {};
+    let originalScales = {};
 
-			// Check if redirected from story page
-			const isFromStory = window.location.href.includes('?fromStory=true');
+    // Variables for alternating video playback
+    let videoElement1, videoElement2;
+    let activeVideoElement;
+    let videoTexture1, videoTexture2;
+    let activeVideoTexture;
+    let videoBackground;
+    let isVideo1Active = true;
 
-			if (isFromStory) {
-				// If coming from story page, start game directly
-				console.log('Coming from story page, starting game directly');
-				startScreen.style.display = 'none';
-				document.querySelector('.header').style.display = 'block';
-				document.getElementById('instructions').style.display = 'block';
-				// Trigger game initialization
-				window.dispatchEvent(new Event('gamestart'));
-			} else {
-				// Normal display of start button
-				startButton.addEventListener('click', function () {
-					// Hide start screen with fade out effect
-					startScreen.style.transition = 'opacity 1s ease-out';
-					startScreen.style.opacity = '0';
-					setTimeout(() => {
-						startScreen.style.display = 'none';
-						// Show game elements
-						document.querySelector('.header').style.display = 'block';
-						document.getElementById('instructions').style.display = 'block';
-						// Trigger game initialization (defined in main.js)
-						window.dispatchEvent(new Event('gamestart'));
-					}, 1000);
-				});
-			}
-		});
-	</script>
+    // Global variable for debugging
+    let debugVideoTexture = null;
+
+    init();
+    animate();
+
+    function init() {
+      scene = new THREE.Scene();
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+      // Maintain moderate brightness settings to avoid color distortion
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.gammaFactor = 2.2;
+      renderer.toneMappingExposure = 1.2;
+
+      document.body.appendChild(renderer.domElement);
+
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 2, 14); // Adjust camera distance to ensure enlarged book is fully visible
+
+      // Maintain moderate lighting intensity to avoid over-saturated colors
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.5));
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+      dirLight.position.set(5, 10, 7.5);
+      scene.add(dirLight);
+
+      // Add moderate ambient light
+      const ambientLight = new THREE.AmbientLight(0x606060, 0.8);
+      scene.add(ambientLight);
+
+      // Create book container, position in scene center
+      bookContainer = new THREE.Group();
+      bookContainer.position.set(0, 2, 0);
+      scene.add(bookContainer);
+
+      // Add video background support
+      setupDualVideoBackground();
+
+      // Only preload necessary videos
+      preloadCoverVideo();
+      preloadPage1Video();
+      preloadPage2Video();
+      preloadPage3Video();
+      preloadPage4Video();
+      preloadPage5Video();
+      preloadPage6Video();
+
+      // Set initial state: show cover
+      currentPage = 0;
+
+      // Set total number of pages to prevent accidental jumps to non-existent pages
+      const totalPages = 7; // 0:Cover, 1:Page one, 2:Page two, 3:Page three, 4:Page four, 5:Page five, 6:Page six
+
+      // Set camera observation position
+      camTargetZ = 12;
+      camera.position.z = 12;
+
+      // Initial attempt to play videos
+      setTimeout(function () {
+        if (videoElement1) videoElement1.play().catch(e => console.error('Delayed start of video1 failed:', e));
+        if (videoElement2) videoElement2.play().catch(e => console.error('Delayed start of video2 failed:', e));
+        if (coverVideoElement) coverVideoElement.play().catch(e => console.error('Delayed start of cover video failed:', e));
+      }, 1000);
+
+      // Register window click event - handle user interaction
+      window.addEventListener('click', (event) => {
+        // Try to start all videos on user interaction (resolves autoplay restrictions in some browsers)
+        startAllVideos();
+
+        // If animation is in progress, ignore clicks
+        if (isAnimating) {
+          console.log("Animation in progress, ignoring click");
+          return;
+        }
+
+        // Calculate mouse position and convert to normalized coordinates
+        const mouse = new THREE.Vector2();
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;  // Range: -1 to 1
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1; // Range: -1 to 1
+
+        // Update the raycaster for detecting 3D object clicks
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(mouse, camera);
+
+        // Collect all objects that might be clicked - only check visible pages
+        const clickableObjects = [];
+        if (coverMesh && coverMesh.visible) clickableObjects.push(coverMesh);
+        if (pageMesh && pageMesh.visible) clickableObjects.push(pageMesh);
+        if (page2Mesh && page2Mesh.visible) clickableObjects.push(page2Mesh);
+        if (page3Mesh && page3Mesh.visible) clickableObjects.push(page3Mesh);
+        if (page4Mesh && page4Mesh.visible) clickableObjects.push(page4Mesh);
+        if (page5Mesh && page5Mesh.visible) clickableObjects.push(page5Mesh);
+        if (page6Mesh && page6Mesh.visible) clickableObjects.push(page6Mesh);
+
+        // Check if the ray intersects with any clickable objects
+        const intersects = raycaster.intersectObjects(clickableObjects);
+
+        // If an interactive object was clicked
+        if (intersects.length > 0) {
+          const clickedObject = intersects[0].object;
+
+          console.log("Clicked object:", clickedObject.userData.type, "Current page:", currentPage);
+
+          // Determine if the clicked object is the current centrally displayed page
+          const isCurrentCenterObject = (
+            (clickedObject === coverMesh && currentPage === 0) ||
+            (clickedObject === pageMesh && currentPage === 1) ||
+            (clickedObject === page2Mesh && currentPage === 2) ||
+            (clickedObject === page3Mesh && currentPage === 3) ||
+            (clickedObject === page4Mesh && currentPage === 4) ||
+            (clickedObject === page5Mesh && currentPage === 5) ||
+            (clickedObject === page6Mesh && currentPage === 6)
+          );
+
+          // If it's the current central page and no page is enlarged
+          if (isCurrentCenterObject && !focusedPage) {
+            // If current page is clicked, turn to next page
+            if (clickedObject === coverMesh) {
+              console.log("Clicked cover, turning to first page");
+              slideCoverAnimation();
+              return;
+            } else if (clickedObject === pageMesh) {
+              console.log("Clicked first page, turning to second page");
+              turnToPage2Animation();
+              return;
+            } else if (clickedObject === page2Mesh) {
+              console.log("Clicked second page, turning to third page");
+              turnToPage3Animation();
+              return;
+            } else if (clickedObject === page3Mesh) {
+              console.log("Clicked third page, turning to fourth page");
+              turnToPage4Animation();
+              return;
+            } else if (clickedObject === page4Mesh) {
+              console.log("Clicked fourth page, turning to fifth page");
+              turnToPage5Animation();
+              return;
+            } else if (clickedObject === page5Mesh) {
+              console.log("Clicked fifth page, turning to sixth page");
+              turnToPage6Animation();
+              return;
+            } else if (clickedObject === page6Mesh) {
+              console.log("Clicked sixth page, this is the last page");
+              return;
+            }
+          }
+          // If an enlarged page is clicked, restore original size
+          else if (clickedObject === focusedPage) {
+            console.log("Clicked enlarged page, restoring original size");
+            resetAllPages();
+            return;
+          }
+          // If a minimized page or side page is clicked
+          else {
+            console.log("Clicked non-central page:", clickedObject.userData.type);
+
+            // Jump directly to the corresponding page based on clicked object
+            if (clickedObject === coverMesh) {
+              console.log("Clicked cover, jumping directly to cover");
+              directResetToPage(0, coverMesh);
+              return;
+            } else if (clickedObject === pageMesh) {
+              console.log("Clicked first page, jumping directly to first page");
+              directResetToPage(1, pageMesh);
+              return;
+            } else if (clickedObject === page2Mesh) {
+              console.log("Clicked second page, jumping directly to second page");
+              directResetToPage(2, page2Mesh);
+              return;
+            } else if (clickedObject === page3Mesh) {
+              console.log("Clicked third page, jumping directly to third page");
+              directResetToPage(3, page3Mesh);
+              return;
+            } else if (clickedObject === page4Mesh) {
+              console.log("Clicked fourth page, jumping directly to fourth page");
+              directResetToPage(4, page4Mesh);
+              return;
+            } else if (clickedObject === page5Mesh) {
+              console.log("Clicked fifth page, jumping directly to fifth page");
+              directResetToPage(5, page5Mesh);
+              return;
+            } else if (clickedObject === page6Mesh) {
+              console.log("Clicked sixth page, jumping directly to sixth page");
+              directResetToPage(6, page6Mesh);
+              return;
+            }
+          }
+        }
+        // Clicked empty area
+        else if (focusedPage) {
+          console.log("Clicked empty area, restoring all pages");
+          resetAllPages();
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Also update background size if it's created
+        if (videoBackground) {
+          updateBackgroundSize(videoBackground);
+        }
+      });
+
+      // Add Skip button click event
+      document.getElementById('skipButton').addEventListener('click', function () {
+        console.log("Clicked Skip button, redirecting to game page");
+        window.location.href = 'game.html?fromStory=true';
+      });
+    }
+
+    // Add Skip functionality - return to cover without animation
+    function skipToMainCover() {
+      // If animation is in progress, ignore click
+      if (isAnimating) {
+        console.log("Animation in progress, ignoring Skip request");
+        return;
+      }
+
+      console.log("Executing Skip action, returning directly to cover");
+      isAnimating = true;
+
+      // Clear focus state
+      focusedPage = null;
+
+      // Stop all videos
+      stopAllVideos();
+
+      // Set state directly, without animation
+      if (coverMesh) {
+        // Ensure cover is visible
+        coverMesh.visible = true;
+
+        // Set cover position and size directly
+        coverMesh.position.set(0, 0, 2);
+        coverMesh.scale.set(1.3, 1.3, 1.3);
+        coverMesh.rotation.set(0, 0, 0);
+
+        // Ensure cover is on top
+        bookContainer.remove(coverMesh);
+        bookContainer.add(coverMesh);
+      }
+
+      // Hide all non-cover pages
+      if (pageMesh) pageMesh.visible = false;
+      if (page2Mesh) page2Mesh.visible = false;
+      if (page3Mesh) page3Mesh.visible = false;
+      if (page4Mesh) page4Mesh.visible = false;
+      if (page5Mesh) page5Mesh.visible = false;
+      if (page6Mesh) page6Mesh.visible = false;
+
+      // Set current page to cover
+      currentPage = 0;
+
+      // Play cover video
+      if (coverVideoElement) {
+        coverVideoElement.currentTime = 0;
+        coverVideoElement.play().catch(e => console.error('Unable to play cover video:', e));
+      }
+
+      // Reset camera position
+      camera.position.set(0, 2, 12);
+
+      // Complete operation
+      isAnimating = false;
+      console.log("Directly returned to cover state");
+    }
+
+    // Helper function to start all videos
+    function startAllVideos() {
+      if (videoElement1 && videoElement1.paused) {
+        videoElement1.play().catch(e => console.error('Unable to play background video1:', e));
+      }
+      if (videoElement2 && videoElement2.paused) {
+        videoElement2.play().catch(e => console.error('Unable to play background video2:', e));
+      }
+      if (coverVideoElement && coverVideoElement.paused) {
+        coverVideoElement.play().catch(e => console.error('Unable to play cover video:', e));
+      }
+      if (page1VideoElement && page1VideoElement.paused) {
+        page1VideoElement.play().catch(e => console.error('Unable to play page1 video:', e));
+      }
+      if (page2VideoElement && page2VideoElement.paused) {
+        page2VideoElement.play().catch(e => console.error('Unable to play page2 video:', e));
+      }
+      if (page3VideoElement && page3VideoElement.paused) {
+        page3VideoElement.play().catch(e => console.error('Unable to play page3 video:', e));
+      }
+      if (page4VideoElement && page4VideoElement.paused) {
+        page4VideoElement.play().catch(e => console.error('Unable to play page4 video:', e));
+      }
+      if (page5VideoElement && page5VideoElement.paused) {
+        page5VideoElement.play().catch(e => console.error('Unable to play page5 video:', e));
+      }
+      if (page6VideoElement && page6VideoElement.paused) {
+        page6VideoElement.play().catch(e => console.error('Unable to play page6 video:', e));
+      }
+    }
+
+    // Set dual video background
+    function setupDualVideoBackground() {
+      // Get two video elements
+      videoElement1 = document.getElementById('videoPreload');
+      videoElement2 = document.getElementById('videoPreload2');
+
+      if (!videoElement1 || !videoElement2) {
+        console.error('Unable to find video elements');
+        fallbackToImage();
+        return;
+      }
+
+      console.log('Found two video elements, setting alternating playback');
+
+      // Set properties of both videos
+      videoElement1.muted = true;
+      videoElement1.playsInline = true;
+      videoElement1.loop = false; // We won't loop manually, so no need to loop
+
+      videoElement2.muted = true;
+      videoElement2.playsInline = true;
+      videoElement2.loop = false;
+
+      // Activate first video
+      activeVideoElement = videoElement1;
+      isVideo1Active = true;
+
+      // Create two video textures
+      videoTexture1 = new THREE.VideoTexture(videoElement1);
+      setupVideoTexture(videoTexture1);
+
+      videoTexture2 = new THREE.VideoTexture(videoElement2);
+      setupVideoTexture(videoTexture2);
+
+      // Activate first texture
+      activeVideoTexture = videoTexture1;
+      debugVideoTexture = videoTexture1;
+
+      // Ensure that the other video starts playing automatically when the first one ends
+      videoElement1.addEventListener('timeupdate', function () {
+        // Prepare to switch when video1 is about to end (last 0.5 seconds)
+        if (videoElement1.currentTime > videoElement1.duration - 0.5 && isVideo1Active) {
+          videoElement2.currentTime = 0;
+          videoElement2.play().catch(e => console.error('Failed to preload video2:', e));
+        }
+      });
+
+      videoElement1.addEventListener('ended', function () {
+        console.log('Video1 finished, switching to video2');
+        // Start video2 immediately (already preloaded)
+        videoElement2.play().catch(e => console.error('Failed to switch to video2:', e));
+
+        // Update active video reference
+        activeVideoElement = videoElement2;
+        activeVideoTexture = videoTexture2;
+        debugVideoTexture = videoTexture2;
+        isVideo1Active = false;
+
+        // Update background texture
+        if (videoBackground && videoBackground.material) {
+          videoBackground.material.map = videoTexture2;
+        }
+      });
+
+      videoElement2.addEventListener('timeupdate', function () {
+        // Prepare to switch when video2 is about to end (last 0.5 seconds)
+        if (videoElement2.currentTime > videoElement2.duration - 0.5 && !isVideo1Active) {
+          videoElement1.currentTime = 0;
+          videoElement1.play().catch(e => console.error('Failed to preload video1:', e));
+        }
+      });
+
+      videoElement2.addEventListener('ended', function () {
+        console.log('Video2 finished, switching to video1');
+        // Start video1 immediately (already preloaded)
+        videoElement1.play().catch(e => console.error('Failed to switch to video1:', e));
+
+        // Update active video reference
+        activeVideoElement = videoElement1;
+        activeVideoTexture = videoTexture1;
+        debugVideoTexture = videoTexture1;
+        isVideo1Active = true;
+
+        // Update background texture
+        if (videoBackground && videoBackground.material) {
+          videoBackground.material.map = videoTexture1;
+        }
+      });
+
+      // Start trying to play the first video
+      videoElement1.play().then(() => {
+        console.log('Video1 started playing');
+        // Create background
+        createBackgroundWithTexture(videoTexture1);
+      }).catch(error => {
+        console.error('Failed to play initial video:', error);
+        fallbackToImage();
+      });
+    }
+
+    // Set common properties for video textures
+    function setupVideoTexture(texture) {
+      texture.wrapS = THREE.ClampToEdgeWrapping;
+      texture.wrapT = THREE.ClampToEdgeWrapping;
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.center.set(0.5, 0.5);
+      texture.repeat.set(1, 1);
+      texture.encoding = THREE.sRGBEncoding;
+    }
+
+    function fallbackToImage() {
+      // Fallback to static image
+      console.log('Using static image as background');
+      const loader = new THREE.TextureLoader();
+      loader.load('storytelling/forest_background.jpg', function (texture) {
+        createBackgroundWithTexture(texture);
+      });
+    }
+
+    // Update background size based on window size
+    function updateBackgroundSize(background) {
+      const aspectRatio = window.innerWidth / window.innerHeight;
+      let newWidth, newHeight;
+
+      if (aspectRatio > 16 / 9) {
+        // Wide screen device, prioritize width
+        newWidth = 60 * aspectRatio / (16 / 9); // Reduce from 80 to 60
+        newHeight = 60 * (9 / 16);
+      } else {
+        // Tall screen device, prioritize height
+        newWidth = 60; // Reduce from 80 to 60
+        newHeight = 60 / aspectRatio * (16 / 9);
+      }
+
+      background.geometry = new THREE.PlaneGeometry(newWidth, newHeight);
+      console.log(`Screen adjustment: ${aspectRatio.toFixed(2)}, New background size: ${newWidth.toFixed(2)}x${newHeight.toFixed(2)}`);
+    }
+
+    // Create background using given texture
+    function createBackgroundWithTexture(texture) {
+      console.log('Creating background, using texture:', texture);
+
+      // Calculate background size to make it smaller
+      const aspectRatio = window.innerWidth / window.innerHeight;
+      let bgWidth, bgHeight;
+
+      if (aspectRatio > 16 / 9) {
+        // Wide screen device, prioritize width
+        bgWidth = 60 * aspectRatio / (16 / 9); // Reduce from 80 to 60
+        bgHeight = 60 * (9 / 16);
+      } else {
+        // Tall screen device, prioritize height
+        bgWidth = 60; // Reduce from 80 to 60
+        bgHeight = 60 / aspectRatio * (16 / 9);
+      }
+
+      console.log(`Screen aspect ratio: ${aspectRatio.toFixed(2)}, Background size: ${bgWidth.toFixed(2)}x${bgHeight.toFixed(2)}`);
+
+      const bgGeometry = new THREE.PlaneGeometry(bgWidth, bgHeight);
+      const bgMaterial = new THREE.MeshBasicMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+      });
+
+      // Main background panel - adjust position and size
+      videoBackground = new THREE.Mesh(bgGeometry, bgMaterial);
+      videoBackground.position.set(0, 0, -18); // Slightly closer, adjusted from -20 to -18
+      bookContainer.add(videoBackground);
+
+      // Add particle effect
+      addParticles(bookContainer);
+
+      // Reduce fog to make video clearer
+      scene.fog = new THREE.FogExp2(0xaaccff, 0.0005);
+
+      // Adjust camera position for better background observation
+      camera.position.z = 12;
+      camTargetZ = 10;
+    }
+
+    // Modify particle effect to not block video
+    function addParticles(parent) {
+      const particlesGeometry = new THREE.BufferGeometry();
+      const particleCount = 300; // Reduce particle count
+
+      const positionArray = new Float32Array(particleCount * 3);
+      const sizeArray = new Float32Array(particleCount);
+
+      for (let i = 0; i < particleCount; i++) {
+        // Randomly distributed around the field of view, not concentrated in the center
+        const radius = 12 + Math.random() * 18; // Increase range of particle distribution
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI / 2; // Hemisphere distribution
+
+        // Distributed around the area, not blocking the center of the video
+        positionArray[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+        positionArray[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+        positionArray[i * 3 + 2] = -radius * Math.cos(phi) - 2; // Bias towards the back
+
+        sizeArray[i] = 0.05 + Math.random() * 0.15; // Increase particle size
+      }
+
+      particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positionArray, 3));
+      particlesGeometry.setAttribute('size', new THREE.BufferAttribute(sizeArray, 1));
+
+      const particlesMaterial = new THREE.PointsMaterial({
+        color: 0xffffff, // Use pure white, enhance brightness
+        size: 0.15, // Increase size
+        transparent: true,
+        opacity: 0.7, // Increase opacity, improve visibility
+        sizeAttenuation: true
+      });
+
+      const particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
+      parent.add(particleSystem);
+
+      // Add slow rotation animation
+      gsap.to(particleSystem.rotation, {
+        y: Math.PI * 2,
+        duration: 180, // Slower rotation
+        repeat: -1,
+        ease: "none"
+      });
+    }
+
+    // Preload page1 video
+    function preloadPage1Video() {
+      // Create hidden video element
+      page1VideoElement = document.createElement('video');
+      page1VideoElement.id = 'page1Video';
+      page1VideoElement.style.display = 'none';
+      page1VideoElement.muted = true;
+      page1VideoElement.playsInline = true;
+      page1VideoElement.loop = true; // Loop playback
+      page1VideoElement.crossOrigin = 'anonymous';
+      page1VideoElement.preload = 'auto';
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/page1.mp4';
+      source.type = 'video/mp4';
+      page1VideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(page1VideoElement);
+
+      // Load video
+      page1VideoElement.load();
+
+      // Add load success event
+      page1VideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Page1 video loaded, ready to play');
+
+        // Create video texture (but don't play yet)
+        if (!page1VideoTexture) {
+          page1VideoTexture = new THREE.VideoTexture(page1VideoElement);
+          page1VideoTexture.minFilter = THREE.LinearFilter;
+          page1VideoTexture.magFilter = THREE.LinearFilter;
+          page1VideoTexture.format = THREE.RGBAFormat;
+          page1VideoTexture.encoding = THREE.sRGBEncoding;
+          page1VideoTexture.generateMipmaps = false;
+        }
+
+        // Remove event listener to avoid duplicate calls
+        page1VideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      page1VideoElement.addEventListener('error', function (e) {
+        console.error('Failed to load Page1 video:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/page1.jpg', function (texture) {
+          page1VideoTexture = texture;
+        });
+      });
+
+      console.log('Page1 video preloading started');
+    }
+
+    // Preload page2 video
+    function preloadPage2Video() {
+      // Create hidden video element
+      page2VideoElement = document.createElement('video');
+      page2VideoElement.id = 'page2Video';
+      page2VideoElement.style.display = 'none';
+      page2VideoElement.muted = true;
+      page2VideoElement.playsInline = true;
+      page2VideoElement.loop = true; // Allow video to loop playback
+      page2VideoElement.crossOrigin = 'anonymous';
+      page2VideoElement.preload = 'auto'; // Ensure preloading
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/page2.mp4';
+      source.type = 'video/mp4';
+      page2VideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(page2VideoElement);
+
+      // Load video
+      page2VideoElement.load();
+
+      // When video has loaded enough data
+      page2VideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Page2 video ready to play');
+
+        // Create video texture (but don't play yet)
+        if (!page2VideoTexture) {
+          page2VideoTexture = new THREE.VideoTexture(page2VideoElement);
+          page2VideoTexture.minFilter = THREE.LinearFilter;
+          page2VideoTexture.magFilter = THREE.LinearFilter;
+          page2VideoTexture.format = THREE.RGBAFormat;
+          page2VideoTexture.encoding = THREE.sRGBEncoding;
+          page2VideoTexture.generateMipmaps = false;
+        }
+
+        // Remove event listener to avoid duplicate calls
+        page2VideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      page2VideoElement.addEventListener('error', function (e) {
+        console.error('Failed to load Page2 video:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/page2.jpg', function (texture) {
+          page2VideoTexture = texture;
+        });
+      });
+
+      console.log('Page2 video preloading started');
+    }
+
+    // Preload page3 video
+    function preloadPage3Video() {
+      // Create hidden video element
+      page3VideoElement = document.createElement('video');
+      page3VideoElement.id = 'page3Video';
+      page3VideoElement.style.display = 'none';
+      page3VideoElement.muted = true;
+      page3VideoElement.playsInline = true;
+      page3VideoElement.loop = true; // Allow video to loop playback
+      page3VideoElement.crossOrigin = 'anonymous';
+      page3VideoElement.preload = 'auto'; // Ensure preloading
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/page3.mp4';
+      source.type = 'video/mp4';
+      page3VideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(page3VideoElement);
+
+      // Load video
+      page3VideoElement.load();
+
+      // When video has loaded enough data
+      page3VideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Page3 video ready to play');
+
+        // Create video texture (but don't play yet)
+        if (!page3VideoTexture) {
+          page3VideoTexture = new THREE.VideoTexture(page3VideoElement);
+          page3VideoTexture.minFilter = THREE.LinearFilter;
+          page3VideoTexture.magFilter = THREE.LinearFilter;
+          page3VideoTexture.format = THREE.RGBAFormat;
+          page3VideoTexture.encoding = THREE.sRGBEncoding;
+          page3VideoTexture.generateMipmaps = false;
+        }
+
+        // Remove event listener to avoid duplicate calls
+        page3VideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      page3VideoElement.addEventListener('error', function (e) {
+        console.error('Failed to load Page3 video:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/page3.jpg', function (texture) {
+          page3VideoTexture = texture;
+        });
+      });
+
+      console.log('Page3 video preloading started');
+    }
+
+    // Preload page4 video
+    function preloadPage4Video() {
+      // Create hidden video element
+      page4VideoElement = document.createElement('video');
+      page4VideoElement.id = 'page4Video';
+      page4VideoElement.style.display = 'none';
+      page4VideoElement.muted = true;
+      page4VideoElement.playsInline = true;
+      page4VideoElement.loop = true; // Allow video to loop playback
+      page4VideoElement.crossOrigin = 'anonymous';
+      page4VideoElement.preload = 'auto'; // Ensure preloading
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/page4.mp4';
+      source.type = 'video/mp4';
+      page4VideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(page4VideoElement);
+
+      // Load video
+      page4VideoElement.load();
+
+      // When video has loaded enough data
+      page4VideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Page4 video ready to play');
+
+        // Create video texture (but don't play yet)
+        if (!page4VideoTexture) {
+          page4VideoTexture = new THREE.VideoTexture(page4VideoElement);
+          page4VideoTexture.minFilter = THREE.LinearFilter;
+          page4VideoTexture.magFilter = THREE.LinearFilter;
+          page4VideoTexture.format = THREE.RGBAFormat;
+          page4VideoTexture.encoding = THREE.sRGBEncoding;
+          page4VideoTexture.generateMipmaps = false;
+        }
+
+        // Remove event listener to avoid duplicate calls
+        page4VideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      page4VideoElement.addEventListener('error', function (e) {
+        console.error('Failed to load Page4 video:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/page4.jpg', function (texture) {
+          page4VideoTexture = texture;
+        });
+      });
+
+      console.log('Page4 video preloading started');
+    }
+
+    // Preload page5 video
+    function preloadPage5Video() {
+      // Create hidden video element
+      page5VideoElement = document.createElement('video');
+      page5VideoElement.id = 'page5Video';
+      page5VideoElement.style.display = 'none';
+      page5VideoElement.muted = true;
+      page5VideoElement.playsInline = true;
+      page5VideoElement.loop = true; // Allow video to loop playback
+      page5VideoElement.crossOrigin = 'anonymous';
+      page5VideoElement.preload = 'auto'; // Ensure preloading
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/page5.mp4';
+      source.type = 'video/mp4';
+      page5VideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(page5VideoElement);
+
+      // Load video
+      page5VideoElement.load();
+
+      // When video has loaded enough data
+      page5VideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Page5 video ready to play');
+
+        // Create video texture (but don't play yet)
+        if (!page5VideoTexture) {
+          page5VideoTexture = new THREE.VideoTexture(page5VideoElement);
+          page5VideoTexture.minFilter = THREE.LinearFilter;
+          page5VideoTexture.magFilter = THREE.LinearFilter;
+          page5VideoTexture.format = THREE.RGBAFormat;
+          page5VideoTexture.encoding = THREE.sRGBEncoding;
+          page5VideoTexture.generateMipmaps = false;
+        }
+
+        // Remove event listener to avoid duplicate calls
+        page5VideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      page5VideoElement.addEventListener('error', function (e) {
+        console.error('Failed to load Page5 video:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/page5.jpg', function (texture) {
+          page5VideoTexture = texture;
+        });
+      });
+
+      console.log('Page5 video preloading started');
+    }
+
+    // Preload page6 video
+    function preloadPage6Video() {
+      // Create hidden video element
+      page6VideoElement = document.createElement('video');
+      page6VideoElement.id = 'page6Video';
+      page6VideoElement.style.display = 'none';
+      page6VideoElement.muted = true;
+      page6VideoElement.playsInline = true;
+      page6VideoElement.loop = true; // Allow video to loop playback
+      page6VideoElement.crossOrigin = 'anonymous';
+      page6VideoElement.preload = 'auto'; // Ensure preloading
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/page6.mp4';
+      source.type = 'video/mp4';
+      page6VideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(page6VideoElement);
+
+      // Load video
+      page6VideoElement.load();
+
+      // When video has loaded enough data
+      page6VideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Page6 video ready to play');
+
+        // Create video texture (but don't play yet)
+        if (!page6VideoTexture) {
+          page6VideoTexture = new THREE.VideoTexture(page6VideoElement);
+          page6VideoTexture.minFilter = THREE.LinearFilter;
+          page6VideoTexture.magFilter = THREE.LinearFilter;
+          page6VideoTexture.format = THREE.RGBAFormat;
+          page6VideoTexture.encoding = THREE.sRGBEncoding;
+          page6VideoTexture.generateMipmaps = false;
+        }
+
+        // Remove event listener to avoid duplicate calls
+        page6VideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      page6VideoElement.addEventListener('error', function (e) {
+        console.error('Failed to load Page6 video:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/page6.jpg', function (texture) {
+          page6VideoTexture = texture;
+        });
+      });
+
+      console.log('Page6 video preloading started');
+    }
+
+    // Preload cover video
+    function preloadCoverVideo() {
+      // Create hidden video element
+      coverVideoElement = document.createElement('video');
+      coverVideoElement.id = 'coverVideo';
+      coverVideoElement.style.display = 'none';
+      coverVideoElement.muted = true;
+      coverVideoElement.playsInline = true;
+      coverVideoElement.loop = true; // Loop playback
+      coverVideoElement.crossOrigin = 'anonymous';
+      coverVideoElement.preload = 'auto';
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/cover.mp4';
+      source.type = 'video/mp4';
+      coverVideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(coverVideoElement);
+
+      // Load video
+      coverVideoElement.load();
+
+      // Add load success event
+      coverVideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Cover video loaded, ready to play');
+
+        // Create video texture
+        if (!coverVideoTexture) {
+          coverVideoTexture = new THREE.VideoTexture(coverVideoElement);
+          coverVideoTexture.minFilter = THREE.LinearFilter;
+          coverVideoTexture.magFilter = THREE.LinearFilter;
+          coverVideoTexture.format = THREE.RGBAFormat;
+          coverVideoTexture.encoding = THREE.sRGBEncoding;
+          coverVideoTexture.generateMipmaps = false;
+
+          // Create cover mesh
+          const height = 5.5;
+          const width = height * (2035 / 2044);
+
+          const material = new THREE.MeshBasicMaterial({
+            map: coverVideoTexture,
+            side: THREE.DoubleSide,
+            transparent: true,
+          });
+
+          const geometry = new THREE.PlaneGeometry(width, height);
+          coverMesh = new THREE.Mesh(geometry, material);
+          coverMesh.position.set(0, 0, 2); // Place cover in front center position
+          coverMesh.scale.set(1.3, 1.3, 1.3); // Initial cover slightly enlarged
+          coverMesh.userData = { type: 'cover' };
+          bookContainer.add(coverMesh);
+
+          // Save original position and scale of cover for reference by subsequent pages
+          window.coverOriginalPosition = { x: 0, y: 0, z: 2 };
+          window.coverOriginalScale = { x: 1.3, y: 1.3, z: 1.3 };
+
+          // Save original transform of cover
+          saveOriginalTransform(coverMesh);
+
+          coverVideoElement.play().catch(e => {
+            console.error('Unable to play cover video:', e);
+          });
+
+          console.log('Cover video mesh created');
+        }
+
+        // Remove event listener to avoid duplicate calls
+        coverVideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      coverVideoElement.addEventListener('error', function (e) {
+        console.error('Cover video loading failed:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/cover.jpg', function (texture) {
+          coverVideoTexture = texture;
+
+          // Create cover mesh
+          const height = 5.5;
+          const width = height * (2035 / 2044);
+
+          const material = new THREE.MeshBasicMaterial({
+            map: coverVideoTexture,
+            side: THREE.DoubleSide,
+            transparent: true,
+          });
+
+          const geometry = new THREE.PlaneGeometry(width, height);
+          coverMesh = new THREE.Mesh(geometry, material);
+          coverMesh.position.set(0, 0, 2); // Place cover in front center position
+          coverMesh.scale.set(1.3, 1.3, 1.3); // Initial cover slightly enlarged
+          coverMesh.userData = { type: 'cover' };
+          bookContainer.add(coverMesh);
+
+          // Save original position and scale of cover for reference by subsequent pages
+          window.coverOriginalPosition = { x: 0, y: 0, z: 2 };
+          window.coverOriginalScale = { x: 1.3, y: 1.3, z: 1.3 };
+
+          // Save original transform of cover
+          saveOriginalTransform(coverMesh);
+
+          console.log('Cover image mesh created');
+        });
+      });
+
+      console.log('Cover video preloading started');
+    }
+
+    // Modify cover slide animation, implement cover shrinking and moving left, page1 enlarging and showing
+    function slideCoverAnimation() {
+      console.log("Starting cover slide animation");
+      isAnimating = true;
+
+      // Reset focus state
+      focusedPage = null;
+
+      // Get initial display position and size of cover
+      const coverPos = window.coverOriginalPosition;
+      const coverScale = window.coverOriginalScale;
+
+      // If pageMesh already exists, remove it first
+      if (pageMesh) {
+        bookContainer.remove(pageMesh);
+        pageMesh = null;
+      }
+
+      // Create page1 video plane
+      const height = 5.5;
+      const width = height * (2035 / 2044);
+
+      const material = new THREE.MeshBasicMaterial({
+        map: page1VideoTexture,
+        side: THREE.DoubleSide,
+        transparent: true,
+        toneMapped: false
+      });
+
+      const geometry = new THREE.PlaneGeometry(width, height);
+      pageMesh = new THREE.Mesh(geometry, material);
+
+      // Initial position set to right side for right-to-left page turning
+      pageMesh.position.set(7, 0, -1);
+      pageMesh.scale.set(1, 1, 1);
+      pageMesh.rotation.y = 0.2; // Initial slight rotation
+      pageMesh.userData = { type: 'page1' };
+      pageMesh.visible = true;
+      bookContainer.add(pageMesh);
+
+      // Start playing page1 video
+      if (page1VideoElement) {
+        page1VideoElement.currentTime = 0;
+        page1VideoElement.play().catch(err => {
+          console.error('Unable to play page1 video:', err);
+        });
+      }
+
+      // Create a spine object, fixed on the left
+      const spineGeometry = new THREE.BoxGeometry(0.2, height, 0.3);
+      const spineMaterial = new THREE.MeshBasicMaterial({ color: 0x555555 });
+      const spine = new THREE.Mesh(spineGeometry, spineMaterial);
+      spine.position.set(-width / 2 - 0.1, 0, 0); // Fixed at left edge
+      pageMesh.add(spine);
+
+      // Cover leftward rotation animation (around spine)
+      gsap.to(coverMesh.position, {
+        x: -7, // Move to left position
+        y: 0,
+        z: -2, // Move backward
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Cover shrink leftward
+      gsap.to(coverMesh.scale, {
+        x: 0.9,
+        y: 0.9,
+        z: 0.9,
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Add cover rotation effect
+      gsap.to(coverMesh.rotation, {
+        y: -0.2, // Slight left rotation
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // First page right-to-left turning animation
+      gsap.to(pageMesh.position, {
+        x: coverPos.x, // Move to center position
+        y: coverPos.y,
+        z: coverPos.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2 // Slight delay
+      });
+
+      // First page scales to original cover size
+      gsap.to(pageMesh.scale, {
+        x: coverScale.x,
+        y: coverScale.y,
+        z: coverScale.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2
+      });
+
+      // First page rotates to face front
+      gsap.to(pageMesh.rotation, {
+        y: 0, // Rotate back to front
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2,
+        onComplete: function () {
+          storyShown = true;
+          isAnimating = false;
+          currentPage = 1;
+
+          // Set each page to correct visibility
+          if (coverMesh) coverMesh.visible = true;
+          if (pageMesh) pageMesh.visible = true;
+          if (page2Mesh) page2Mesh.visible = false;
+
+          // Save original transform of first page
+          saveOriginalTransform(pageMesh);
+
+          // To maintain layer relationship, ensure page1 is on top
+          bookContainer.remove(pageMesh);
+          bookContainer.add(pageMesh);
+
+          console.log("Cover slide animation complete, current page:", currentPage);
+        }
+      });
+
+      // Simultaneously move camera slightly to better observe the entire scene
+      gsap.to(camera.position, {
+        x: 0,
+        y: 2,
+        z: 12,
+        duration: 1.5,
+        ease: "power1.inOut"
+      });
+    }
+
+    // Add Skip functionality - return to cover without animation
+    function skipToMainCover() {
+      // If animation is in progress, ignore click
+      if (isAnimating) {
+        console.log("Animation in progress, ignoring Skip request");
+        return;
+      }
+
+      console.log("Executing Skip action, returning directly to cover");
+      isAnimating = true;
+
+      // Clear focus state
+      focusedPage = null;
+
+      // Stop all videos
+      stopAllVideos();
+
+      // Set state directly, without animation
+      if (coverMesh) {
+        // Ensure cover is visible
+        coverMesh.visible = true;
+
+        // Set cover position and size directly
+        coverMesh.position.set(0, 0, 2);
+        coverMesh.scale.set(1.3, 1.3, 1.3);
+        coverMesh.rotation.set(0, 0, 0);
+
+        // Ensure cover is on top
+        bookContainer.remove(coverMesh);
+        bookContainer.add(coverMesh);
+      }
+
+      // Hide all non-cover pages
+      if (pageMesh) pageMesh.visible = false;
+      if (page2Mesh) page2Mesh.visible = false;
+      if (page3Mesh) page3Mesh.visible = false;
+      if (page4Mesh) page4Mesh.visible = false;
+      if (page5Mesh) page5Mesh.visible = false;
+      if (page6Mesh) page6Mesh.visible = false;
+
+      // Set current page to cover
+      currentPage = 0;
+
+      // Play cover video
+      if (coverVideoElement) {
+        coverVideoElement.currentTime = 0;
+        coverVideoElement.play().catch(e => console.error('Unable to play cover video:', e));
+      }
+
+      // Reset camera position
+      camera.position.set(0, 2, 12);
+
+      // Complete operation
+      isAnimating = false;
+      console.log("Directly returned to cover state");
+    }
+
+    // Helper function to start all videos
+    function startAllVideos() {
+      if (videoElement1 && videoElement1.paused) {
+        videoElement1.play().catch(e => console.error('Unable to play background video1:', e));
+      }
+      if (videoElement2 && videoElement2.paused) {
+        videoElement2.play().catch(e => console.error('Unable to play background video2:', e));
+      }
+      if (coverVideoElement && coverVideoElement.paused) {
+        coverVideoElement.play().catch(e => console.error('Unable to play cover video:', e));
+      }
+      if (page1VideoElement && page1VideoElement.paused) {
+        page1VideoElement.play().catch(e => console.error('Unable to play page1 video:', e));
+      }
+      if (page2VideoElement && page2VideoElement.paused) {
+        page2VideoElement.play().catch(e => console.error('Unable to play page2 video:', e));
+      }
+      if (page3VideoElement && page3VideoElement.paused) {
+        page3VideoElement.play().catch(e => console.error('Unable to play page3 video:', e));
+      }
+      if (page4VideoElement && page4VideoElement.paused) {
+        page4VideoElement.play().catch(e => console.error('Unable to play page4 video:', e));
+      }
+      if (page5VideoElement && page5VideoElement.paused) {
+        page5VideoElement.play().catch(e => console.error('Unable to play page5 video:', e));
+      }
+      if (page6VideoElement && page6VideoElement.paused) {
+        page6VideoElement.play().catch(e => console.error('Unable to play page6 video:', e));
+      }
+    }
+
+    // Set dual video background
+    function setupDualVideoBackground() {
+      // Get two video elements
+      videoElement1 = document.getElementById('videoPreload');
+      videoElement2 = document.getElementById('videoPreload2');
+
+      if (!videoElement1 || !videoElement2) {
+        console.error('Unable to find video elements');
+        fallbackToImage();
+        return;
+      }
+
+      console.log('Found two video elements, setting alternating playback');
+
+      // Set properties of both videos
+      videoElement1.muted = true;
+      videoElement1.playsInline = true;
+      videoElement1.loop = false; // We won't loop manually, so no need to loop
+
+      videoElement2.muted = true;
+      videoElement2.playsInline = true;
+      videoElement2.loop = false;
+
+      // Activate first video
+      activeVideoElement = videoElement1;
+      isVideo1Active = true;
+
+      // Create two video textures
+      videoTexture1 = new THREE.VideoTexture(videoElement1);
+      setupVideoTexture(videoTexture1);
+
+      videoTexture2 = new THREE.VideoTexture(videoElement2);
+      setupVideoTexture(videoTexture2);
+
+      // Activate first texture
+      activeVideoTexture = videoTexture1;
+      debugVideoTexture = videoTexture1;
+
+      // Ensure that the other video starts playing automatically when the first one ends
+      videoElement1.addEventListener('timeupdate', function () {
+        // Prepare to switch when video1 is about to end (last 0.5 seconds)
+        if (videoElement1.currentTime > videoElement1.duration - 0.5 && isVideo1Active) {
+          videoElement2.currentTime = 0;
+          videoElement2.play().catch(e => console.error('Failed to preload video2:', e));
+        }
+      });
+
+      videoElement1.addEventListener('ended', function () {
+        console.log('Video1 finished, switching to video2');
+        // Start video2 immediately (already preloaded)
+        videoElement2.play().catch(e => console.error('Failed to switch to video2:', e));
+
+        // Update active video reference
+        activeVideoElement = videoElement2;
+        activeVideoTexture = videoTexture2;
+        debugVideoTexture = videoTexture2;
+        isVideo1Active = false;
+
+        // Update background texture
+        if (videoBackground && videoBackground.material) {
+          videoBackground.material.map = videoTexture2;
+        }
+      });
+
+      videoElement2.addEventListener('timeupdate', function () {
+        // Prepare to switch when video2 is about to end (last 0.5 seconds)
+        if (videoElement2.currentTime > videoElement2.duration - 0.5 && !isVideo1Active) {
+          videoElement1.currentTime = 0;
+          videoElement1.play().catch(e => console.error('Failed to preload video1:', e));
+        }
+      });
+
+      videoElement2.addEventListener('ended', function () {
+        console.log('Video2 finished, switching to video1');
+        // Start video1 immediately (already preloaded)
+        videoElement1.play().catch(e => console.error('Failed to switch to video1:', e));
+
+        // Update active video reference
+        activeVideoElement = videoElement1;
+        activeVideoTexture = videoTexture1;
+        debugVideoTexture = videoTexture1;
+        isVideo1Active = true;
+
+        // Update background texture
+        if (videoBackground && videoBackground.material) {
+          videoBackground.material.map = videoTexture1;
+        }
+      });
+
+      // Start trying to play the first video
+      videoElement1.play().then(() => {
+        console.log('Video1 started playing');
+        // Create background
+        createBackgroundWithTexture(videoTexture1);
+      }).catch(error => {
+        console.error('Failed to play initial video:', error);
+        fallbackToImage();
+      });
+    }
+
+    // Set common properties for video textures
+    function setupVideoTexture(texture) {
+      texture.wrapS = THREE.ClampToEdgeWrapping;
+      texture.wrapT = THREE.ClampToEdgeWrapping;
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.center.set(0.5, 0.5);
+      texture.repeat.set(1, 1);
+      texture.encoding = THREE.sRGBEncoding;
+    }
+
+    function fallbackToImage() {
+      // Fallback to static image
+      console.log('Using static image as background');
+      const loader = new THREE.TextureLoader();
+      loader.load('storytelling/forest_background.jpg', function (texture) {
+        createBackgroundWithTexture(texture);
+      });
+    }
+
+    // Update background size based on window size
+    function updateBackgroundSize(background) {
+      const aspectRatio = window.innerWidth / window.innerHeight;
+      let newWidth, newHeight;
+
+      if (aspectRatio > 16 / 9) {
+        // Wide screen device, prioritize width
+        newWidth = 60 * aspectRatio / (16 / 9); // Reduce from 80 to 60
+        newHeight = 60 * (9 / 16);
+      } else {
+        // Tall screen device, prioritize height
+        newWidth = 60; // Reduce from 80 to 60
+        newHeight = 60 / aspectRatio * (16 / 9);
+      }
+
+      background.geometry = new THREE.PlaneGeometry(newWidth, newHeight);
+      console.log(`Screen adjustment: ${aspectRatio.toFixed(2)}, New background size: ${newWidth.toFixed(2)}x${newHeight.toFixed(2)}`);
+    }
+
+    // Create background using given texture
+    function createBackgroundWithTexture(texture) {
+      console.log('Creating background, using texture:', texture);
+
+      // Calculate background size to make it smaller
+      const aspectRatio = window.innerWidth / window.innerHeight;
+      let bgWidth, bgHeight;
+
+      if (aspectRatio > 16 / 9) {
+        // Wide screen device, prioritize width
+        bgWidth = 60 * aspectRatio / (16 / 9); // Reduce from 80 to 60
+        bgHeight = 60 * (9 / 16);
+      } else {
+        // Tall screen device, prioritize height
+        bgWidth = 60; // Reduce from 80 to 60
+        bgHeight = 60 / aspectRatio * (16 / 9);
+      }
+
+      console.log(`Screen aspect ratio: ${aspectRatio.toFixed(2)}, Background size: ${bgWidth.toFixed(2)}x${bgHeight.toFixed(2)}`);
+
+      const bgGeometry = new THREE.PlaneGeometry(bgWidth, bgHeight);
+      const bgMaterial = new THREE.MeshBasicMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+      });
+
+      // Main background panel - adjust position and size
+      videoBackground = new THREE.Mesh(bgGeometry, bgMaterial);
+      videoBackground.position.set(0, 0, -18); // Slightly closer, adjusted from -20 to -18
+      bookContainer.add(videoBackground);
+
+      // Add particle effect
+      addParticles(bookContainer);
+
+      // Reduce fog to make video clearer
+      scene.fog = new THREE.FogExp2(0xaaccff, 0.0005);
+
+      // Adjust camera position for better background observation
+      camera.position.z = 12;
+      camTargetZ = 10;
+    }
+
+    // Modify particle effect to not block video
+    function addParticles(parent) {
+      const particlesGeometry = new THREE.BufferGeometry();
+      const particleCount = 300; // Reduce particle count
+
+      const positionArray = new Float32Array(particleCount * 3);
+      const sizeArray = new Float32Array(particleCount);
+
+      for (let i = 0; i < particleCount; i++) {
+        // Randomly distributed around the field of view, not concentrated in the center
+        const radius = 12 + Math.random() * 18; // Increase range of particle distribution
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI / 2; // Hemisphere distribution
+
+        // Distributed around the area, not blocking the center of the video
+        positionArray[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+        positionArray[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+        positionArray[i * 3 + 2] = -radius * Math.cos(phi) - 2; // Bias towards the back
+
+        sizeArray[i] = 0.05 + Math.random() * 0.15; // Increase particle size
+      }
+
+      particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positionArray, 3));
+      particlesGeometry.setAttribute('size', new THREE.BufferAttribute(sizeArray, 1));
+
+      const particlesMaterial = new THREE.PointsMaterial({
+        color: 0xffffff, // Use pure white, enhance brightness
+        size: 0.15, // Increase size
+        transparent: true,
+        opacity: 0.7, // Increase opacity, improve visibility
+        sizeAttenuation: true
+      });
+
+      const particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
+      parent.add(particleSystem);
+
+      // Add slow rotation animation
+      gsap.to(particleSystem.rotation, {
+        y: Math.PI * 2,
+        duration: 180, // Slower rotation
+        repeat: -1,
+        ease: "none"
+      });
+    }
+
+    // Preload page1 video
+    function preloadPage1Video() {
+      // Create hidden video element
+      page1VideoElement = document.createElement('video');
+      page1VideoElement.id = 'page1Video';
+      page1VideoElement.style.display = 'none';
+      page1VideoElement.muted = true;
+      page1VideoElement.playsInline = true;
+      page1VideoElement.loop = true; // Loop playback
+      page1VideoElement.crossOrigin = 'anonymous';
+      page1VideoElement.preload = 'auto';
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/page1.mp4';
+      source.type = 'video/mp4';
+      page1VideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(page1VideoElement);
+
+      // Load video
+      page1VideoElement.load();
+
+      // Add load success event
+      page1VideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Page1 video loaded, ready to play');
+
+        // Create video texture (but don't play yet)
+        if (!page1VideoTexture) {
+          page1VideoTexture = new THREE.VideoTexture(page1VideoElement);
+          page1VideoTexture.minFilter = THREE.LinearFilter;
+          page1VideoTexture.magFilter = THREE.LinearFilter;
+          page1VideoTexture.format = THREE.RGBAFormat;
+          page1VideoTexture.encoding = THREE.sRGBEncoding;
+          page1VideoTexture.generateMipmaps = false;
+        }
+
+        // Remove event listener to avoid duplicate calls
+        page1VideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      page1VideoElement.addEventListener('error', function (e) {
+        console.error('Failed to load Page1 video:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/page1.jpg', function (texture) {
+          page1VideoTexture = texture;
+        });
+      });
+
+      console.log('Page1 video preloading started');
+    }
+
+    // Preload page2 video
+    function preloadPage2Video() {
+      // Create hidden video element
+      page2VideoElement = document.createElement('video');
+      page2VideoElement.id = 'page2Video';
+      page2VideoElement.style.display = 'none';
+      page2VideoElement.muted = true;
+      page2VideoElement.playsInline = true;
+      page2VideoElement.loop = true; // Allow video to loop playback
+      page2VideoElement.crossOrigin = 'anonymous';
+      page2VideoElement.preload = 'auto'; // Ensure preloading
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/page2.mp4';
+      source.type = 'video/mp4';
+      page2VideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(page2VideoElement);
+
+      // Load video
+      page2VideoElement.load();
+
+      // When video has loaded enough data
+      page2VideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Page2 video ready to play');
+
+        // Create video texture (but don't play yet)
+        if (!page2VideoTexture) {
+          page2VideoTexture = new THREE.VideoTexture(page2VideoElement);
+          page2VideoTexture.minFilter = THREE.LinearFilter;
+          page2VideoTexture.magFilter = THREE.LinearFilter;
+          page2VideoTexture.format = THREE.RGBAFormat;
+          page2VideoTexture.encoding = THREE.sRGBEncoding;
+          page2VideoTexture.generateMipmaps = false;
+        }
+
+        // Remove event listener to avoid duplicate calls
+        page2VideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      page2VideoElement.addEventListener('error', function (e) {
+        console.error('Failed to load Page2 video:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/page2.jpg', function (texture) {
+          page2VideoTexture = texture;
+        });
+      });
+
+      console.log('Page2 video preloading started');
+    }
+
+    // Preload page3 video
+    function preloadPage3Video() {
+      // Create hidden video element
+      page3VideoElement = document.createElement('video');
+      page3VideoElement.id = 'page3Video';
+      page3VideoElement.style.display = 'none';
+      page3VideoElement.muted = true;
+      page3VideoElement.playsInline = true;
+      page3VideoElement.loop = true; // Allow video to loop playback
+      page3VideoElement.crossOrigin = 'anonymous';
+      page3VideoElement.preload = 'auto'; // Ensure preloading
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/page3.mp4';
+      source.type = 'video/mp4';
+      page3VideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(page3VideoElement);
+
+      // Load video
+      page3VideoElement.load();
+
+      // When video has loaded enough data
+      page3VideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Page3 video ready to play');
+
+        // Create video texture (but don't play yet)
+        if (!page3VideoTexture) {
+          page3VideoTexture = new THREE.VideoTexture(page3VideoElement);
+          page3VideoTexture.minFilter = THREE.LinearFilter;
+          page3VideoTexture.magFilter = THREE.LinearFilter;
+          page3VideoTexture.format = THREE.RGBAFormat;
+          page3VideoTexture.encoding = THREE.sRGBEncoding;
+          page3VideoTexture.generateMipmaps = false;
+        }
+
+        // Remove event listener to avoid duplicate calls
+        page3VideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      page3VideoElement.addEventListener('error', function (e) {
+        console.error('Failed to load Page3 video:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/page3.jpg', function (texture) {
+          page3VideoTexture = texture;
+        });
+      });
+
+      console.log('Page3 video preloading started');
+    }
+
+    // Preload page4 video
+    function preloadPage4Video() {
+      // Create hidden video element
+      page4VideoElement = document.createElement('video');
+      page4VideoElement.id = 'page4Video';
+      page4VideoElement.style.display = 'none';
+      page4VideoElement.muted = true;
+      page4VideoElement.playsInline = true;
+      page4VideoElement.loop = true; // Allow video to loop playback
+      page4VideoElement.crossOrigin = 'anonymous';
+      page4VideoElement.preload = 'auto'; // Ensure preloading
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/page4.mp4';
+      source.type = 'video/mp4';
+      page4VideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(page4VideoElement);
+
+      // Load video
+      page4VideoElement.load();
+
+      // When video has loaded enough data
+      page4VideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Page4 video ready to play');
+
+        // Create video texture (but don't play yet)
+        if (!page4VideoTexture) {
+          page4VideoTexture = new THREE.VideoTexture(page4VideoElement);
+          page4VideoTexture.minFilter = THREE.LinearFilter;
+          page4VideoTexture.magFilter = THREE.LinearFilter;
+          page4VideoTexture.format = THREE.RGBAFormat;
+          page4VideoTexture.encoding = THREE.sRGBEncoding;
+          page4VideoTexture.generateMipmaps = false;
+        }
+
+        // Remove event listener to avoid duplicate calls
+        page4VideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      page4VideoElement.addEventListener('error', function (e) {
+        console.error('Failed to load Page4 video:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/page4.jpg', function (texture) {
+          page4VideoTexture = texture;
+        });
+      });
+
+      console.log('Page4 video preloading started');
+    }
+
+    // Preload page5 video
+    function preloadPage5Video() {
+      // Create hidden video element
+      page5VideoElement = document.createElement('video');
+      page5VideoElement.id = 'page5Video';
+      page5VideoElement.style.display = 'none';
+      page5VideoElement.muted = true;
+      page5VideoElement.playsInline = true;
+      page5VideoElement.loop = true; // Allow video to loop playback
+      page5VideoElement.crossOrigin = 'anonymous';
+      page5VideoElement.preload = 'auto'; // Ensure preloading
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/page5.mp4';
+      source.type = 'video/mp4';
+      page5VideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(page5VideoElement);
+
+      // Load video
+      page5VideoElement.load();
+
+      // When video has loaded enough data
+      page5VideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Page5 video ready to play');
+
+        // Create video texture (but don't play yet)
+        if (!page5VideoTexture) {
+          page5VideoTexture = new THREE.VideoTexture(page5VideoElement);
+          page5VideoTexture.minFilter = THREE.LinearFilter;
+          page5VideoTexture.magFilter = THREE.LinearFilter;
+          page5VideoTexture.format = THREE.RGBAFormat;
+          page5VideoTexture.encoding = THREE.sRGBEncoding;
+          page5VideoTexture.generateMipmaps = false;
+        }
+
+        // Remove event listener to avoid duplicate calls
+        page5VideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      page5VideoElement.addEventListener('error', function (e) {
+        console.error('Failed to load Page5 video:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/page5.jpg', function (texture) {
+          page5VideoTexture = texture;
+        });
+      });
+
+      console.log('Page5 video preloading started');
+    }
+
+    // Preload page6 video
+    function preloadPage6Video() {
+      // Create hidden video element
+      page6VideoElement = document.createElement('video');
+      page6VideoElement.id = 'page6Video';
+      page6VideoElement.style.display = 'none';
+      page6VideoElement.muted = true;
+      page6VideoElement.playsInline = true;
+      page6VideoElement.loop = true; // Allow video to loop playback
+      page6VideoElement.crossOrigin = 'anonymous';
+      page6VideoElement.preload = 'auto'; // Ensure preloading
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/page6.mp4';
+      source.type = 'video/mp4';
+      page6VideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(page6VideoElement);
+
+      // Load video
+      page6VideoElement.load();
+
+      // When video has loaded enough data
+      page6VideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Page6 video ready to play');
+
+        // Create video texture (but don't play yet)
+        if (!page6VideoTexture) {
+          page6VideoTexture = new THREE.VideoTexture(page6VideoElement);
+          page6VideoTexture.minFilter = THREE.LinearFilter;
+          page6VideoTexture.magFilter = THREE.LinearFilter;
+          page6VideoTexture.format = THREE.RGBAFormat;
+          page6VideoTexture.encoding = THREE.sRGBEncoding;
+          page6VideoTexture.generateMipmaps = false;
+        }
+
+        // Remove event listener to avoid duplicate calls
+        page6VideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      page6VideoElement.addEventListener('error', function (e) {
+        console.error('Failed to load Page6 video:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/page6.jpg', function (texture) {
+          page6VideoTexture = texture;
+        });
+      });
+
+      console.log('Page6 video preloading started');
+    }
+
+    // Preload cover video
+    function preloadCoverVideo() {
+      // Create hidden video element
+      coverVideoElement = document.createElement('video');
+      coverVideoElement.id = 'coverVideo';
+      coverVideoElement.style.display = 'none';
+      coverVideoElement.muted = true;
+      coverVideoElement.playsInline = true;
+      coverVideoElement.loop = true; // Loop playback
+      coverVideoElement.crossOrigin = 'anonymous';
+      coverVideoElement.preload = 'auto';
+
+      // Add video source
+      const source = document.createElement('source');
+      source.src = 'storytelling/cover.mp4';
+      source.type = 'video/mp4';
+      coverVideoElement.appendChild(source);
+
+      // Add to DOM
+      document.body.appendChild(coverVideoElement);
+
+      // Load video
+      coverVideoElement.load();
+
+      // Add load success event
+      coverVideoElement.addEventListener('canplaythrough', function onCanPlay() {
+        console.log('Cover video loaded, ready to play');
+
+        // Create video texture
+        if (!coverVideoTexture) {
+          coverVideoTexture = new THREE.VideoTexture(coverVideoElement);
+          coverVideoTexture.minFilter = THREE.LinearFilter;
+          coverVideoTexture.magFilter = THREE.LinearFilter;
+          coverVideoTexture.format = THREE.RGBAFormat;
+          coverVideoTexture.encoding = THREE.sRGBEncoding;
+          coverVideoTexture.generateMipmaps = false;
+
+          // Create cover mesh
+          const height = 5.5;
+          const width = height * (2035 / 2044);
+
+          const material = new THREE.MeshBasicMaterial({
+            map: coverVideoTexture,
+            side: THREE.DoubleSide,
+            transparent: true,
+          });
+
+          const geometry = new THREE.PlaneGeometry(width, height);
+          coverMesh = new THREE.Mesh(geometry, material);
+          coverMesh.position.set(0, 0, 2); // Place cover in front center position
+          coverMesh.scale.set(1.3, 1.3, 1.3); // Initial cover slightly enlarged
+          coverMesh.userData = { type: 'cover' };
+          bookContainer.add(coverMesh);
+
+          // Save original position and scale of cover for reference by subsequent pages
+          window.coverOriginalPosition = { x: 0, y: 0, z: 2 };
+          window.coverOriginalScale = { x: 1.3, y: 1.3, z: 1.3 };
+
+          // Save original transform of cover
+          saveOriginalTransform(coverMesh);
+
+          coverVideoElement.play().catch(e => {
+            console.error('Unable to play cover video:', e);
+          });
+
+          console.log('Cover video mesh created');
+        }
+
+        // Remove event listener to avoid duplicate calls
+        coverVideoElement.removeEventListener('canplaythrough', onCanPlay);
+      });
+
+      // Add error handling
+      coverVideoElement.addEventListener('error', function (e) {
+        console.error('Cover video loading failed:', e);
+        // Load static image as fallback
+        const loader = new THREE.TextureLoader();
+        loader.load('storytelling/cover.jpg', function (texture) {
+          coverVideoTexture = texture;
+
+          // Create cover mesh
+          const height = 5.5;
+          const width = height * (2035 / 2044);
+
+          const material = new THREE.MeshBasicMaterial({
+            map: coverVideoTexture,
+            side: THREE.DoubleSide,
+            transparent: true,
+          });
+
+          const geometry = new THREE.PlaneGeometry(width, height);
+          coverMesh = new THREE.Mesh(geometry, material);
+          coverMesh.position.set(0, 0, 2); // Place cover in front center position
+          coverMesh.scale.set(1.3, 1.3, 1.3); // Initial cover slightly enlarged
+          coverMesh.userData = { type: 'cover' };
+          bookContainer.add(coverMesh);
+
+          // Save original position and scale of cover for reference by subsequent pages
+          window.coverOriginalPosition = { x: 0, y: 0, z: 2 };
+          window.coverOriginalScale = { x: 1.3, y: 1.3, z: 1.3 };
+
+          // Save original transform of cover
+          saveOriginalTransform(coverMesh);
+
+          console.log('Cover image mesh created');
+        });
+      });
+
+      console.log('Cover video preloading started');
+    }
+
+    // 修改封面滑动动画，实现封面缩小并移左，page1放大显示
+    function slideCoverAnimation() {
+      console.log("Starting cover slide animation");
+      isAnimating = true;
+
+      // Reset focus state
+      focusedPage = null;
+
+      // Get initial display position and size of cover
+      const coverPos = window.coverOriginalPosition;
+      const coverScale = window.coverOriginalScale;
+
+      // If pageMesh already exists, remove it first
+      if (pageMesh) {
+        bookContainer.remove(pageMesh);
+        pageMesh = null;
+      }
+
+      // Create page1 video plane
+      const height = 5.5;
+      const width = height * (2035 / 2044);
+
+      const material = new THREE.MeshBasicMaterial({
+        map: page1VideoTexture,
+        side: THREE.DoubleSide,
+        transparent: true,
+        toneMapped: false
+      });
+
+      const geometry = new THREE.PlaneGeometry(width, height);
+      pageMesh = new THREE.Mesh(geometry, material);
+
+      // Initial position set to right side for right-to-left page turning
+      pageMesh.position.set(7, 0, -1);
+      pageMesh.scale.set(1, 1, 1);
+      pageMesh.rotation.y = 0.2; // Initial slight rotation
+      pageMesh.userData = { type: 'page1' };
+      pageMesh.visible = true;
+      bookContainer.add(pageMesh);
+
+      // Start playing page1 video
+      if (page1VideoElement) {
+        page1VideoElement.currentTime = 0;
+        page1VideoElement.play().catch(err => {
+          console.error('Unable to play page1 video:', err);
+        });
+      }
+
+      // Create a spine object, fixed on the left
+      const spineGeometry = new THREE.BoxGeometry(0.2, height, 0.3);
+      const spineMaterial = new THREE.MeshBasicMaterial({ color: 0x555555 });
+      const spine = new THREE.Mesh(spineGeometry, spineMaterial);
+      spine.position.set(-width / 2 - 0.1, 0, 0); // Fixed at left edge
+      pageMesh.add(spine);
+
+      // Cover leftward rotation animation (around spine)
+      gsap.to(coverMesh.position, {
+        x: -7, // Move to left position
+        y: 0,
+        z: -2, // Move backward
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Cover shrink leftward
+      gsap.to(coverMesh.scale, {
+        x: 0.9,
+        y: 0.9,
+        z: 0.9,
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Add cover rotation effect
+      gsap.to(coverMesh.rotation, {
+        y: -0.2, // Slight left rotation
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // First page right-to-left turning animation
+      gsap.to(pageMesh.position, {
+        x: coverPos.x, // Move to center position
+        y: coverPos.y,
+        z: coverPos.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2 // Slight delay
+      });
+
+      // First page scales to original cover size
+      gsap.to(pageMesh.scale, {
+        x: coverScale.x,
+        y: coverScale.y,
+        z: coverScale.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2
+      });
+
+      // First page rotates to face front
+      gsap.to(pageMesh.rotation, {
+        y: 0, // Rotate back to front
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2,
+        onComplete: function () {
+          storyShown = true;
+          isAnimating = false;
+          currentPage = 1;
+
+          // Set each page to correct visibility
+          if (coverMesh) coverMesh.visible = true;
+          if (pageMesh) pageMesh.visible = true;
+          if (page2Mesh) page2Mesh.visible = false;
+
+          // Save original transform of first page
+          saveOriginalTransform(pageMesh);
+
+          // To maintain layer relationship, ensure page1 is on top
+          bookContainer.remove(pageMesh);
+          bookContainer.add(pageMesh);
+
+          console.log("Cover slide animation complete, current page:", currentPage);
+        }
+      });
+
+      // Simultaneously move camera slightly to better observe the entire scene
+      gsap.to(camera.position, {
+        x: 0,
+        y: 2,
+        z: 12,
+        duration: 1.5,
+        ease: "power1.inOut"
+      });
+    }
+
+    // 添加切换到第二页的动画
+    function turnToPage2Animation() {
+      if (isAnimating) return;
+
+      isAnimating = true;
+      currentPage = 2; // 设置当前页为第二页
+
+      // 重置聚焦状态
+      focusedPage = null;
+
+      // 获取封面的初始显示位置和大小
+      const coverPos = window.coverOriginalPosition;
+      const coverScale = window.coverOriginalScale;
+
+      // 如果page2Mesh已存在，先移除它
+      if (page2Mesh) {
+        bookContainer.remove(page2Mesh);
+        page2Mesh = null;
+      }
+
+      // 创建全新的page2平面
+      const height = 5.5;
+      const width = height * (2035 / 2044);
+
+      const material = new THREE.MeshBasicMaterial({
+        map: page2VideoTexture,
+        side: THREE.DoubleSide,
+        transparent: true,
+        toneMapped: false,
+      });
+
+      const geometry = new THREE.PlaneGeometry(width, height);
+      page2Mesh = new THREE.Mesh(geometry, material);
+
+      // 初始位置设为右侧，以便从右向左翻页
+      page2Mesh.position.set(7, 0, -1);
+      page2Mesh.scale.set(1, 1, 1);
+      page2Mesh.rotation.y = 0.2; // 初始轻微旋转
+      page2Mesh.userData = { type: 'page2' };
+      page2Mesh.visible = true;
+      bookContainer.add(page2Mesh);
+
+      // 创建一个书脊对象，固定在左侧
+      const spineGeometry = new THREE.BoxGeometry(0.2, height, 0.3);
+      const spineMaterial = new THREE.MeshBasicMaterial({ color: 0x555555 });
+      const spine = new THREE.Mesh(spineGeometry, spineMaterial);
+      spine.position.set(-width / 2 - 0.1, 0, 0); // 固定在左侧边缘
+      page2Mesh.add(spine);
+
+      // 重置并播放page2视频
+      if (page2VideoElement) {
+        page2VideoElement.currentTime = 0;
+        page2VideoElement.volume = 0;
+        page2VideoElement.muted = true;
+        page2VideoElement.play().catch(err => {
+          console.error('无法播放Page2视频:', err);
+        });
+      }
+
+      // 创建page1左移动画
+      gsap.to(pageMesh.position, {
+        x: -7, // 移动到左侧位置
+        y: 0,
+        z: -2, // 向后移动
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Page1缩小
+      gsap.to(pageMesh.scale, {
+        x: 0.9,
+        y: 0.9,
+        z: 0.9,
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // 添加Page1旋转
+      gsap.to(pageMesh.rotation, {
+        y: -0.2, // 轻微左旋
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Page2从右向左翻页动画
+      gsap.to(page2Mesh.position, {
+        x: coverPos.x, // 移动到中心位置
+        y: coverPos.y,
+        z: coverPos.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2 // 轻微延迟
+      });
+
+      // Page2缩放到原始封面大小
+      gsap.to(page2Mesh.scale, {
+        x: coverScale.x,
+        y: coverScale.y,
+        z: coverScale.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2,
+      });
+
+      // Page2旋转到正面
+      gsap.to(page2Mesh.rotation, {
+        y: 0, // 旋转回正面
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2,
+        onComplete: function () {
+          // 保存page2的原始变换
+          saveOriginalTransform(page2Mesh);
+
+          // 动画完成后加入渲染队列最后，确保在最上层
+          bookContainer.remove(page2Mesh);
+          bookContainer.add(page2Mesh);
+
+          isAnimating = false;
+          console.log('切换到page2视频完成，可点击继续到第三页');
+        }
+      });
+
+      // 相机动画保持与封面动画一致
+      gsap.to(camera.position, {
+        x: 0,
+        y: 2,
+        z: 12,
+        duration: 1.5,
+        ease: "power1.inOut"
+      });
+    }
+
+    // 添加切换到第三页的动画
+    function turnToPage3Animation() {
+      if (isAnimating) return;
+
+      isAnimating = true;
+      currentPage = 3; // 设置当前页为第三页
+
+      // 重置聚焦状态
+      focusedPage = null;
+
+      // 获取封面的初始显示位置和大小
+      const coverPos = window.coverOriginalPosition;
+      const coverScale = window.coverOriginalScale;
+
+      // 如果page3Mesh已存在，先移除它
+      if (page3Mesh) {
+        bookContainer.remove(page3Mesh);
+        page3Mesh = null;
+      }
+
+      // 创建全新的page3平面
+      const height = 5.5;
+      const width = height * (2035 / 2044);
+
+      const material = new THREE.MeshBasicMaterial({
+        map: page3VideoTexture,
+        side: THREE.DoubleSide,
+        transparent: true,
+        toneMapped: false,
+      });
+
+      const geometry = new THREE.PlaneGeometry(width, height);
+      page3Mesh = new THREE.Mesh(geometry, material);
+
+      // 初始位置设为右侧，以便从右向左翻页
+      page3Mesh.position.set(7, 0, -1);
+      page3Mesh.scale.set(1, 1, 1);
+      page3Mesh.rotation.y = 0.2; // 初始轻微旋转
+      page3Mesh.userData = { type: 'page3' };
+      page3Mesh.visible = true;
+      bookContainer.add(page3Mesh);
+
+      // 创建一个书脊对象，固定在左侧
+      const spineGeometry = new THREE.BoxGeometry(0.2, height, 0.3);
+      const spineMaterial = new THREE.MeshBasicMaterial({ color: 0x555555 });
+      const spine = new THREE.Mesh(spineGeometry, spineMaterial);
+      spine.position.set(-width / 2 - 0.1, 0, 0); // 固定在左侧边缘
+      page3Mesh.add(spine);
+
+      // 重置并播放page3视频
+      if (page3VideoElement) {
+        page3VideoElement.currentTime = 0;
+        page3VideoElement.volume = 0;
+        page3VideoElement.muted = true;
+        page3VideoElement.play().catch(err => {
+          console.error('无法播放Page3视频:', err);
+        });
+      }
+
+      // 创建page2左移动画
+      gsap.to(page2Mesh.position, {
+        x: -7, // 移动到左侧位置
+        y: 0,
+        z: -2, // 向后移动
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Page2缩小
+      gsap.to(page2Mesh.scale, {
+        x: 0.9,
+        y: 0.9,
+        z: 0.9,
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // 添加Page2旋转
+      gsap.to(page2Mesh.rotation, {
+        y: -0.2, // 轻微左旋
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Page3从右向左翻页动画
+      gsap.to(page3Mesh.position, {
+        x: coverPos.x, // 移动到中心位置
+        y: coverPos.y,
+        z: coverPos.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2 // 轻微延迟
+      });
+
+      // Page3缩放到原始封面大小
+      gsap.to(page3Mesh.scale, {
+        x: coverScale.x,
+        y: coverScale.y,
+        z: coverScale.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2,
+      });
+
+      // Page3旋转到正面
+      gsap.to(page3Mesh.rotation, {
+        y: 0, // 旋转回正面
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2,
+        onComplete: function () {
+          // 保存page3的原始变换
+          saveOriginalTransform(page3Mesh);
+
+          // 动画完成后加入渲染队列最后，确保在最上层
+          bookContainer.remove(page3Mesh);
+          bookContainer.add(page3Mesh);
+
+          isAnimating = false;
+          console.log('切换到page3视频完成，可点击继续到第四页');
+        }
+      });
+
+      // 相机动画保持一致
+      gsap.to(camera.position, {
+        x: 0,
+        y: 2,
+        z: 12,
+        duration: 1.5,
+        ease: "power1.inOut"
+      });
+    }
+
+    // 添加切换到第四页的动画
+    function turnToPage4Animation() {
+      if (isAnimating) return;
+
+      isAnimating = true;
+      currentPage = 4; // 设置当前页为第四页
+
+      // 重置聚焦状态
+      focusedPage = null;
+
+      // 获取封面的初始显示位置和大小
+      const coverPos = window.coverOriginalPosition;
+      const coverScale = window.coverOriginalScale;
+
+      // 如果page4Mesh已存在，先移除它
+      if (page4Mesh) {
+        bookContainer.remove(page4Mesh);
+        page4Mesh = null;
+      }
+
+      // 创建全新的page4平面
+      const height = 5.5;
+      const width = height * (2035 / 2044);
+
+      const material = new THREE.MeshBasicMaterial({
+        map: page4VideoTexture,
+        side: THREE.DoubleSide,
+        transparent: true,
+        toneMapped: false,
+      });
+
+      const geometry = new THREE.PlaneGeometry(width, height);
+      page4Mesh = new THREE.Mesh(geometry, material);
+
+      // 初始位置设为右侧，以便从右向左翻页
+      page4Mesh.position.set(7, 0, -1);
+      page4Mesh.scale.set(1, 1, 1);
+      page4Mesh.rotation.y = 0.2; // 初始轻微旋转
+      page4Mesh.userData = { type: 'page4' };
+      page4Mesh.visible = true;
+      bookContainer.add(page4Mesh);
+
+      // 创建一个书脊对象，固定在左侧
+      const spineGeometry = new THREE.BoxGeometry(0.2, height, 0.3);
+      const spineMaterial = new THREE.MeshBasicMaterial({ color: 0x555555 });
+      const spine = new THREE.Mesh(spineGeometry, spineMaterial);
+      spine.position.set(-width / 2 - 0.1, 0, 0); // 固定在左侧边缘
+      page4Mesh.add(spine);
+
+      // 重置并播放page4视频
+      if (page4VideoElement) {
+        page4VideoElement.currentTime = 0;
+        page4VideoElement.volume = 0;
+        page4VideoElement.muted = true;
+        page4VideoElement.play().catch(err => {
+          console.error('无法播放Page4视频:', err);
+        });
+      }
+
+      // 创建page3左移动画
+      gsap.to(page3Mesh.position, {
+        x: -7, // 移动到左侧位置
+        y: 0,
+        z: -2, // 向后移动
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Page3缩小
+      gsap.to(page3Mesh.scale, {
+        x: 0.9,
+        y: 0.9,
+        z: 0.9,
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // 添加Page3旋转
+      gsap.to(page3Mesh.rotation, {
+        y: -0.2, // 轻微左旋
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Page4从右向左翻页动画
+      gsap.to(page4Mesh.position, {
+        x: coverPos.x, // 移动到中心位置
+        y: coverPos.y,
+        z: coverPos.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2 // 轻微延迟
+      });
+
+      // Page4缩放到原始封面大小
+      gsap.to(page4Mesh.scale, {
+        x: coverScale.x,
+        y: coverScale.y,
+        z: coverScale.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2,
+      });
+
+      // Page4旋转到正面
+      gsap.to(page4Mesh.rotation, {
+        y: 0, // 旋转回正面
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2,
+        onComplete: function () {
+          // 保存page4的原始变换
+          saveOriginalTransform(page4Mesh);
+
+          // 动画完成后加入渲染队列最后，确保在最上层
+          bookContainer.remove(page4Mesh);
+          bookContainer.add(page4Mesh);
+
+          isAnimating = false;
+          console.log('切换到page4视频完成，可点击继续到第五页');
+        }
+      });
+
+      // 相机动画保持一致
+      gsap.to(camera.position, {
+        x: 0,
+        y: 2,
+        z: 12,
+        duration: 1.5,
+        ease: "power1.inOut"
+      });
+    }
+
+    // 添加切换到第五页的动画
+    function turnToPage5Animation() {
+      if (isAnimating) return;
+
+      isAnimating = true;
+      currentPage = 5; // 设置当前页为第五页
+
+      // 重置聚焦状态
+      focusedPage = null;
+
+      // 获取封面的初始显示位置和大小
+      const coverPos = window.coverOriginalPosition;
+      const coverScale = window.coverOriginalScale;
+
+      // 如果page5Mesh已存在，先移除它
+      if (page5Mesh) {
+        bookContainer.remove(page5Mesh);
+        page5Mesh = null;
+      }
+
+      // 创建全新的page5平面
+      const height = 5.5;
+      const width = height * (2035 / 2044);
+
+      const material = new THREE.MeshBasicMaterial({
+        map: page5VideoTexture,
+        side: THREE.DoubleSide,
+        transparent: true,
+        toneMapped: false,
+      });
+
+      const geometry = new THREE.PlaneGeometry(width, height);
+      page5Mesh = new THREE.Mesh(geometry, material);
+
+      // 初始位置设为右侧，以便从右向左翻页
+      page5Mesh.position.set(7, 0, -1);
+      page5Mesh.scale.set(1, 1, 1);
+      page5Mesh.rotation.y = 0.2; // 初始轻微旋转
+      page5Mesh.userData = { type: 'page5' };
+      page5Mesh.visible = true;
+      bookContainer.add(page5Mesh);
+
+      // 创建一个书脊对象，固定在左侧
+      const spineGeometry = new THREE.BoxGeometry(0.2, height, 0.3);
+      const spineMaterial = new THREE.MeshBasicMaterial({ color: 0x555555 });
+      const spine = new THREE.Mesh(spineGeometry, spineMaterial);
+      spine.position.set(-width / 2 - 0.1, 0, 0); // 固定在左侧边缘
+      page5Mesh.add(spine);
+
+      // 重置并播放page5视频
+      if (page5VideoElement) {
+        page5VideoElement.currentTime = 0;
+        page5VideoElement.volume = 0;
+        page5VideoElement.muted = true;
+        page5VideoElement.play().catch(err => {
+          console.error('无法播放Page5视频:', err);
+        });
+      }
+
+      // 创建page4左移动画
+      gsap.to(page4Mesh.position, {
+        x: -7, // 移动到左侧位置
+        y: 0,
+        z: -2, // 向后移动
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Page4缩小
+      gsap.to(page4Mesh.scale, {
+        x: 0.9,
+        y: 0.9,
+        z: 0.9,
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // 添加Page4旋转
+      gsap.to(page4Mesh.rotation, {
+        y: -0.2, // 轻微左旋
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Page5从右向左翻页动画
+      gsap.to(page5Mesh.position, {
+        x: coverPos.x, // 移动到中心位置
+        y: coverPos.y,
+        z: coverPos.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2 // 轻微延迟
+      });
+
+      // Page5缩放到原始封面大小
+      gsap.to(page5Mesh.scale, {
+        x: coverScale.x,
+        y: coverScale.y,
+        z: coverScale.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2,
+      });
+
+      // Page5旋转到正面
+      gsap.to(page5Mesh.rotation, {
+        y: 0, // 旋转回正面
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2,
+        onComplete: function () {
+          // 保存page5的原始变换
+          saveOriginalTransform(page5Mesh);
+
+          // 动画完成后加入渲染队列最后，确保在最上层
+          bookContainer.remove(page5Mesh);
+          bookContainer.add(page5Mesh);
+
+          isAnimating = false;
+          console.log('切换到page5视频完成，这是最后一页');
+        }
+      });
+
+      // 相机动画保持一致
+      gsap.to(camera.position, {
+        x: 0,
+        y: 2,
+        z: 12,
+        duration: 1.5,
+        ease: "power1.inOut"
+      });
+    }
+
+    // 添加切换到第六页的动画
+    function turnToPage6Animation() {
+      if (isAnimating) return;
+
+      isAnimating = true;
+      currentPage = 6; // 设置当前页为第六页
+
+      // 重置聚焦状态
+      focusedPage = null;
+
+      // 获取封面的初始显示位置和大小
+      const coverPos = window.coverOriginalPosition;
+      const coverScale = window.coverOriginalScale;
+
+      // 如果page6Mesh已存在，先移除它
+      if (page6Mesh) {
+        bookContainer.remove(page6Mesh);
+        page6Mesh = null;
+      }
+
+      // 创建全新的page6平面
+      const height = 5.5;
+      const width = height * (2035 / 2044);
+
+      const material = new THREE.MeshBasicMaterial({
+        map: page6VideoTexture,
+        side: THREE.DoubleSide,
+        transparent: true,
+        toneMapped: false,
+      });
+
+      const geometry = new THREE.PlaneGeometry(width, height);
+      page6Mesh = new THREE.Mesh(geometry, material);
+
+      // 初始位置设为右侧，以便从右向左翻页
+      page6Mesh.position.set(7, 0, -1);
+      page6Mesh.scale.set(1, 1, 1);
+      page6Mesh.rotation.y = 0.2; // 初始轻微旋转
+      page6Mesh.userData = { type: 'page6' };
+      page6Mesh.visible = true;
+      bookContainer.add(page6Mesh);
+
+      // 创建一个书脊对象，固定在左侧
+      const spineGeometry = new THREE.BoxGeometry(0.2, height, 0.3);
+      const spineMaterial = new THREE.MeshBasicMaterial({ color: 0x555555 });
+      const spine = new THREE.Mesh(spineGeometry, spineMaterial);
+      spine.position.set(-width / 2 - 0.1, 0, 0); // 固定在左侧边缘
+      page6Mesh.add(spine);
+
+      // 重置并播放page6视频
+      if (page6VideoElement) {
+        page6VideoElement.currentTime = 0;
+        page6VideoElement.volume = 0;
+        page6VideoElement.muted = true;
+        page6VideoElement.play().catch(err => {
+          console.error('无法播放Page6视频:', err);
+        });
+      }
+
+      // 创建page5左移动画
+      gsap.to(page5Mesh.position, {
+        x: -7, // 移动到左侧位置
+        y: 0,
+        z: -2, // 向后移动
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Page5缩小
+      gsap.to(page5Mesh.scale, {
+        x: 0.9,
+        y: 0.9,
+        z: 0.9,
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // 添加Page5旋转
+      gsap.to(page5Mesh.rotation, {
+        y: -0.2, // 轻微左旋
+        duration: 1.2,
+        ease: "power2.inOut"
+      });
+
+      // Page6从右向左翻页动画
+      gsap.to(page6Mesh.position, {
+        x: coverPos.x, // 移动到中心位置
+        y: coverPos.y,
+        z: coverPos.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2 // 轻微延迟
+      });
+
+      // Page6缩放到原始封面大小
+      gsap.to(page6Mesh.scale, {
+        x: coverScale.x,
+        y: coverScale.y,
+        z: coverScale.z,
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2,
+      });
+
+      // Page6旋转到正面
+      gsap.to(page6Mesh.rotation, {
+        y: 0, // 旋转回正面
+        duration: 1.2,
+        ease: "power2.inOut",
+        delay: 0.2,
+        onComplete: function () {
+          // 保存page6的原始变换
+          saveOriginalTransform(page6Mesh);
+
+          // 动画完成后加入渲染队列最后，确保在最上层
+          bookContainer.remove(page6Mesh);
+          bookContainer.add(page6Mesh);
+
+          isAnimating = false;
+          console.log('切换到page6视频完成，这是最后一页');
+        }
+      });
+
+      // 相机动画保持一致
+      gsap.to(camera.position, {
+        x: 0,
+        y: 2,
+        z: 12,
+        duration: 1.5,
+        ease: "power1.inOut"
+      });
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      let delta = clock.getDelta();
+
+      // 平滑相机移动
+      if (!isAnimating && camera.position.z > camTargetZ) {
+        camera.position.z -= delta * 2;
+      }
+
+      // 轻微相机晃动
+      if (!isAnimating) {
+        camera.position.y += Math.sin(clock.getElapsedTime() * 0.5) * 0.001;
+        camera.position.x += Math.sin(clock.getElapsedTime() * 0.3) * 0.0005;
+      }
+
+      // 更新背景视频纹理
+      if (activeVideoTexture && !activeVideoElement.paused) {
+        activeVideoTexture.needsUpdate = true;
+      }
+
+      // 更新所有页面视频纹理
+      updateVideoMaterials();
+
+      renderer.render(scene, camera);
+    }
+
+    // 更新所有页面视频纹理
+    function updateVideoMaterials() {
+      // 更新封面视频材质
+      if (coverMesh && coverVideoTexture && coverVideoElement && !coverVideoElement.paused) {
+        coverVideoTexture.needsUpdate = true;
+      }
+
+      // 更新page1视频材质
+      if (pageMesh && page1VideoTexture && page1VideoElement && !page1VideoElement.paused) {
+        page1VideoTexture.needsUpdate = true;
+      }
+
+      // 更新page2视频材质
+      if (page2Mesh && page2VideoTexture && page2VideoElement && !page2VideoElement.paused) {
+        page2VideoTexture.needsUpdate = true;
+      }
+
+      // 更新page3视频材质
+      if (page3Mesh && page3VideoTexture && page3VideoElement && !page3VideoElement.paused) {
+        page3VideoTexture.needsUpdate = true;
+      }
+
+      // 更新page4视频材质
+      if (page4Mesh && page4VideoTexture && page4VideoElement && !page4VideoElement.paused) {
+        page4VideoTexture.needsUpdate = true;
+      }
+
+      // 更新page5视频材质
+      if (page5Mesh && page5VideoTexture && page5VideoElement && !page5VideoElement.paused) {
+        page5VideoTexture.needsUpdate = true;
+      }
+
+      // 更新page6视频材质
+      if (page6Mesh && page6VideoTexture && page6VideoElement && !page6VideoElement.paused) {
+        page6VideoTexture.needsUpdate = true;
+      }
+    }
+
+    // 处理页面焦点 - 页面的放大、缩小以及点击缩小状态页面时跳转到对应页面
+    // clickedObject: 被点击的页面对象
+    function handlePageFocus(clickedObject) {
+      // 如果正在动画中，忽略点击
+      if (isAnimating) return;
+
+      console.log("处理页面焦点，点击对象:", clickedObject.userData.type);
+
+      // 如果点击的是当前已聚焦(放大)的对象，执行重置操作，使所有页面恢复正常大小
+      if (clickedObject === focusedPage) {
+        resetAllPages();
+        return;
+      }
+
+      // 根据点击对象的类型直接跳转到对应页面
+      if (clickedObject === coverMesh) {
+        directResetToPage(0, coverMesh);
+        return;
+      } else if (clickedObject === pageMesh) {
+        directResetToPage(1, pageMesh);
+        return;
+      } else if (clickedObject === page2Mesh) {
+        directResetToPage(2, page2Mesh);
+        return;
+      } else if (clickedObject === page3Mesh) {
+        directResetToPage(3, page3Mesh);
+        return;
+      } else if (clickedObject === page4Mesh) {
+        directResetToPage(4, page4Mesh);
+        return;
+      } else if (clickedObject === page5Mesh) {
+        directResetToPage(5, page5Mesh);
+        return;
+      } else if (clickedObject === page6Mesh) {
+        directResetToPage(6, page6Mesh);
+        return;
+      }
+
+      // 这里不应该被执行到，但为了健壮性保留
+      console.warn("处理了未识别的对象:", clickedObject);
+    }
+
+    // 重置到封面初始状态的函数
+    function resetToInitialCoverState() {
+      console.log("重置到封面初始状态");
+      isAnimating = true;
+
+      // 恢复相机位置
+      gsap.to(camera.position, {
+        x: 0,
+        y: 2,
+        z: camTargetZ,
+        duration: 1,
+        ease: "power2.inOut"
+      });
+
+      // 重置为封面状态
+      currentPage = 0;
+      console.log("当前页面设置为封面(0)");
+
+      // 设置页面可见性，只显示封面
+      if (coverMesh) coverMesh.visible = true;
+      if (pageMesh) pageMesh.visible = false;
+      if (page2Mesh) page2Mesh.visible = false;
+      if (page3Mesh) page3Mesh.visible = false;
+      if (page4Mesh) page4Mesh.visible = false;
+      if (page5Mesh) page5Mesh.visible = false;
+      if (page6Mesh) page6Mesh.visible = false;
+
+      // 重新播放封面视频
+      if (coverVideoElement) {
+        coverVideoElement.currentTime = 0;
+        coverVideoElement.play().catch(e => console.error('无法重新播放封面视频:', e));
+      }
+
+      // 确保封面在最上层
+      if (coverMesh) {
+        // 将封面移动到初始位置并设置初始大小
+        gsap.to(coverMesh.position, {
+          x: 0,
+          y: 0,
+          z: 2,
+          duration: 1,
+          ease: "power2.inOut"
+        });
+
+        gsap.to(coverMesh.scale, {
+          x: 1.3,
+          y: 1.3,
+          z: 1.3,
+          duration: 1,
+          ease: "power2.inOut"
+        });
+
+        gsap.to(coverMesh.rotation, {
+          y: 0,
+          duration: 1,
+          ease: "power2.inOut",
+          onComplete: function () {
+            bookContainer.remove(coverMesh);
+            bookContainer.add(coverMesh);
+
+            isAnimating = false;
+            focusedPage = null;
+            console.log('已恢复到封面初始状态');
+          }
+        });
+      }
+    }
+
+    // 切换焦点
+    function changeFocus(newFocusPage) {
+      // 将之前聚焦的页面移回原位
+      const oldFocusPage = focusedPage;
+
+
+      // 确保新选中的页面在最上层
+      bookContainer.remove(newFocusPage);
+      bookContainer.add(newFocusPage);
+
+      // 旧页面移到左侧并缩小到0.9倍
+      gsap.to(oldFocusPage.position, {
+        x: -4, // 向左移动
+        y: 0, // 降低位置
+        z: -5, // 向后移动
+        duration: 1,
+        ease: "power2.out"
+      });
+
+      // 旧页面缩小到0.9倍
+      gsap.to(oldFocusPage.scale, {
+        x: 0.9,
+        y: 0.9,
+        z: 0.9,
+        duration: 1,
+        ease: "power2.out"
+      });
+
+      // 旧页面轻微旋转
+      gsap.to(oldFocusPage.rotation, {
+        y: -0.2, // 轻微左旋
+        duration: 1,
+        ease: "power2.out"
+      });
+
+      // 保存新页面原始状态并将其设为焦点
+      saveOriginalTransform(newFocusPage);
+      focusedPage = newFocusPage;
+
+      // 新页面放大到1.8倍并居中
+      gsap.to(newFocusPage.position, {
+        x: 0,
+        y: 2,
+        z: 2, // 向前移动
+        duration: 1,
+        ease: "power2.out"
+      });
+
+      gsap.to(newFocusPage.scale, {
+        x: 1.8,
+        y: 1.8,
+        z: 1.8,
+        duration: 1,
+        ease: "back.out(1.1)"
+      });
+
+      // 恢复旋转角度为0
+      gsap.to(newFocusPage.rotation, {
+        y: 0,
+        duration: 1,
+        ease: "power2.out",
+        onComplete: function () {
+          isAnimating = false;
+        }
+      });
+    }
+
+    // 重置所有页面到原始状态
+    function resetAllPages() {
+      if (!focusedPage) {
+        console.log("没有聚焦页面，不需要重置");
+        return;
+      }
+
+      // 防止动画过程中调用
+      if (isAnimating) {
+        console.log("动画中，忽略重置请求");
+        return;
+      }
+
+      console.log("开始重置所有页面");
+      isAnimating = true;
+
+      // 保存当前页码
+      const savedCurrentPage = currentPage;
+      console.log("记录当前页面状态:", savedCurrentPage);
+
+      // 取消聚焦状态
+      focusedPage = null;
+
+      // 根据当前页面选择对应的网格对象
+      let targetMesh = null;
+      switch (savedCurrentPage) {
+        case 0:
+          targetMesh = coverMesh;
+          break;
+        case 1:
+          targetMesh = pageMesh;
+          break;
+        case 2:
+          targetMesh = page2Mesh;
+          break;
+        case 3:
+          targetMesh = page3Mesh;
+          break;
+        case 4:
+          targetMesh = page4Mesh;
+          break;
+        case 5:
+          targetMesh = page5Mesh;
+          break;
+        case 6:
+          targetMesh = page6Mesh;
+          break;
+      }
+
+      // 调用directResetToPage完成重置
+      if (targetMesh) {
+        directResetToPage(savedCurrentPage, targetMesh);
+      } else {
+        console.error("无法找到目标页面，重置失败");
+        isAnimating = false;
+      }
+    }
+
+    // 保存对象的原始变换
+    function saveOriginalTransform(object) {
+      const id = object.uuid;
+      if (!originalPositions[id]) {
+        originalPositions[id] = {
+          x: object.position.x,
+          y: object.position.y,
+          z: object.position.z
+        };
+      }
+
+      if (!originalScales[id]) {
+        originalScales[id] = {
+          x: object.scale.x,
+          y: object.scale.y,
+          z: object.scale.z
+        };
+      }
+
+      // 也保存旋转信息
+      if (!object.userData.originalRotation) {
+        object.userData.originalRotation = {
+          x: object.rotation.x,
+          y: object.rotation.y,
+          z: object.rotation.z
+        };
+      }
+    }
+
+    // 获取所有当前可见的页面
+    function getAllVisiblePages() {
+      const pages = [];
+      if (coverMesh && coverMesh.visible) pages.push(coverMesh);
+      if (pageMesh && pageMesh.visible) pages.push(pageMesh);
+      if (page2Mesh && page2Mesh.visible) pages.push(page2Mesh);
+      if (page3Mesh && page3Mesh.visible) pages.push(page3Mesh);
+      if (page4Mesh && page4Mesh.visible) pages.push(page4Mesh);
+      if (page5Mesh && page5Mesh.visible) pages.push(page5Mesh);
+      if (page6Mesh && page6Mesh.visible) pages.push(page6Mesh);
+      return pages;
+    }
+
+    // 添加一个简单的调试函数，以便在控制台检查页面位置
+    function logPagePositions() {
+      console.log('--- 页面位置状态 ---');
+      if (coverMesh) console.log('封面:', coverMesh.position, coverMesh.scale);
+      if (pageMesh) console.log('第一页:', pageMesh.position, pageMesh.scale);
+      if (page2Mesh) console.log('第二页:', page2Mesh.position, page2Mesh.scale);
+      if (page3Mesh) console.log('第三页:', page3Mesh.position, page3Mesh.scale);
+      if (page4Mesh) console.log('第四页:', page4Mesh.position, page4Mesh.scale);
+      if (page5Mesh) console.log('第五页:', page5Mesh.position, page5Mesh.scale);
+      if (page6Mesh) console.log('第六页:', page6Mesh.position, page6Mesh.scale);
+      console.log('当前聚焦页面:', focusedPage ? focusedPage.userData.type || '未知' : '无');
+      console.log('------------------');
+    }
+
+    // 聚焦页面
+    function focusPage(page) {
+      // 存储原始位置和缩放
+      focusedPage = page;
+      saveOriginalTransform(page);
+
+      // 存储其他页面的原始变换
+      const otherPages = getAllVisiblePages().filter(p => p !== page);
+      otherPages.forEach(p => saveOriginalTransform(p));
+
+      // 确保选中的页面始终在最上层
+      bookContainer.remove(page);
+      bookContainer.add(page); // 重新添加会使其在渲染顺序中最后渲染，即最上层
+
+      // 放大选中的页面并移至完全居中位置
+      gsap.to(page.position, {
+        x: 0, // 水平完全居中
+        y: 2, // 垂直位置保持不变
+        z: 2, // 向前移动，确保在其他页面前方
+        duration: 1,
+        ease: "power2.out"
+      });
+
+      // 放大到1.8倍
+      gsap.to(page.scale, {
+        x: 1.8,
+        y: 1.8,
+        z: 1.8,
+        duration: 1,
+        ease: "back.out(1.1)"
+      });
+
+      // 确保旋转角度为0，使页面正面朝向用户
+      gsap.to(page.rotation, {
+        y: 0,
+        duration: 0.8,
+        ease: "power2.out"
+      });
+
+      // 其他页面向后移动并缩小到0.9倍，确保被选中页面覆盖
+      otherPages.forEach((otherPage, index) => {
+        // 计算位置，使其均匀分布在主页面后方
+        const angle = (index / otherPages.length) * Math.PI * 0.6; // 小于半圆的分布，集中在左侧
+        const offsetX = -4 - Math.sin(angle) * 3; // 负值使页面在左侧
+        const offsetZ = -3 - Math.cos(angle) * 2; // 所有页面在后方
+
+        gsap.to(otherPage.position, {
+          x: offsetX,
+          y: 0, // 稍微降低位置
+          z: offsetZ, // 向后移动
+          duration: 1,
+          ease: "power2.out"
+        });
+
+        // 缩小到0.9倍
+        gsap.to(otherPage.scale, {
+          x: 0.9,
+          y: 0.9,
+          z: 0.9,
+          duration: 1,
+          ease: "power2.out"
+        });
+
+        // 添加轻微旋转，增强层次感
+        gsap.to(otherPage.rotation, {
+          y: -0.2, // 左侧旋转
+          duration: 1,
+          ease: "power2.out"
+        });
+      });
+
+      // 调整相机位置，确保最佳观看角度
+      gsap.to(camera.position, {
+        x: 0,
+        y: 2,
+        z: 10, // 适当距离，确保整体视觉效果良好
+        duration: 1,
+        ease: "power2.inOut",
+        onComplete: function () {
+          isAnimating = false;
+          logPagePositions();
+        }
+      });
+    }
+
+    // 更新所有页面的可见性
+    function updatePagesVisibility() {
+      console.log("更新页面可见性，当前页面：", currentPage);
+      // 根据当前页码设置页面可见性
+      if (currentPage === 0) { // 封面
+        if (coverMesh) coverMesh.visible = true;
+        if (pageMesh) pageMesh.visible = false;
+        if (page2Mesh) page2Mesh.visible = false;
+        if (page3Mesh) page3Mesh.visible = false;
+        if (page4Mesh) page4Mesh.visible = false;
+        if (page5Mesh) page5Mesh.visible = false;
+        if (page6Mesh) page6Mesh.visible = false;
+      } else if (currentPage === 1) { // 第一页
+        if (coverMesh) coverMesh.visible = true;
+        if (pageMesh) pageMesh.visible = true;
+        if (page2Mesh) page2Mesh.visible = false;
+        if (page3Mesh) page3Mesh.visible = false;
+        if (page4Mesh) page4Mesh.visible = false;
+        if (page5Mesh) page5Mesh.visible = false;
+        if (page6Mesh) page6Mesh.visible = false;
+      } else if (currentPage === 2) { // 第二页
+        if (coverMesh) coverMesh.visible = true;
+        if (pageMesh) pageMesh.visible = true;
+        if (page2Mesh) page2Mesh.visible = true;
+        if (page3Mesh) page3Mesh.visible = false;
+        if (page4Mesh) page4Mesh.visible = false;
+        if (page5Mesh) page5Mesh.visible = false;
+        if (page6Mesh) page6Mesh.visible = false;
+      } else if (currentPage === 3) { // 第三页
+        if (coverMesh) coverMesh.visible = true;
+        if (pageMesh) pageMesh.visible = true;
+        if (page2Mesh) page2Mesh.visible = true;
+        if (page3Mesh) page3Mesh.visible = true;
+        if (page4Mesh) page4Mesh.visible = false;
+        if (page5Mesh) page5Mesh.visible = false;
+        if (page6Mesh) page6Mesh.visible = false;
+      } else if (currentPage === 4) { // 第四页
+        if (coverMesh) coverMesh.visible = true;
+        if (pageMesh) pageMesh.visible = true;
+        if (page2Mesh) page2Mesh.visible = true;
+        if (page3Mesh) page3Mesh.visible = true;
+        if (page4Mesh) page4Mesh.visible = true;
+        if (page5Mesh) page5Mesh.visible = false;
+        if (page6Mesh) page6Mesh.visible = false;
+      } else if (currentPage === 5) { // 第五页
+        if (coverMesh) coverMesh.visible = true;
+        if (pageMesh) pageMesh.visible = true;
+        if (page2Mesh) page2Mesh.visible = true;
+        if (page3Mesh) page3Mesh.visible = true;
+        if (page4Mesh) page4Mesh.visible = true;
+        if (page5Mesh) page5Mesh.visible = true;
+        if (page6Mesh) page6Mesh.visible = false;
+      } else if (currentPage === 6) { // 第六页
+        if (coverMesh) coverMesh.visible = true;
+        if (pageMesh) pageMesh.visible = true;
+        if (page2Mesh) page2Mesh.visible = true;
+        if (page3Mesh) page3Mesh.visible = true;
+        if (page4Mesh) page4Mesh.visible = true;
+        if (page5Mesh) page5Mesh.visible = true;
+        if (page6Mesh) page6Mesh.visible = true;
+      }
+    }
+
+    // 直接恢复到封面状态而不使用resetToInitialCoverState函数(避免递归)
+    function directRestoreCoverState() {
+      console.log("直接恢复到封面状态");
+
+      // 设置当前页面为封面
+      currentPage = 0;
+
+      // 设置页面可见性，只显示封面
+      if (coverMesh) {
+        coverMesh.visible = true;
+
+        // 恢复封面位置和大小
+        gsap.to(coverMesh.position, {
+          x: 0,
+          y: 0,
+          z: 2,
+          duration: 1,
+          ease: "power2.inOut"
+        });
+
+        gsap.to(coverMesh.scale, {
+          x: 1.3,
+          y: 1.3,
+          z: 1.3,
+          duration: 1,
+          ease: "power2.inOut"
+        });
+
+        gsap.to(coverMesh.rotation, {
+          y: 0,
+          duration: 1,
+          ease: "power2.inOut"
+        });
+
+        // 确保封面在最上层
+        bookContainer.remove(coverMesh);
+        bookContainer.add(coverMesh);
+      }
+
+      // 隐藏其他页面
+      if (pageMesh) pageMesh.visible = false;
+      if (page2Mesh) page2Mesh.visible = false;
+      if (page3Mesh) page3Mesh.visible = false;
+      if (page4Mesh) page4Mesh.visible = false;
+      if (page5Mesh) page5Mesh.visible = false;
+      if (page6Mesh) page6Mesh.visible = false;
+
+      // 播放封面视频
+      if (coverVideoElement) {
+        coverVideoElement.currentTime = 0;
+        coverVideoElement.play().catch(e => console.error('无法播放封面视频:', e));
+      }
+
+      // 调整相机位置
+      gsap.to(camera.position, {
+        x: 0,
+        y: 2,
+        z: camTargetZ,
+        duration: 1,
+        ease: "power2.inOut"
+      });
+    }
+
+    // 直接重置到指定页面
+    function directResetToPage(pageNum, targetMesh) {
+      // 添加完整的调试日志
+      console.log("===== 开始重置页面 =====");
+      console.log("目标页面:", pageNum, "目标网格:", targetMesh ? targetMesh.userData.type : "无");
+      console.log("当前页面:", currentPage, "聚焦页面:", focusedPage ? focusedPage.userData.type : "无");
+
+      // 如果正在动画中，忽略重置请求
+      if (isAnimating) {
+        console.log("动画中，忽略直接重置请求");
+        return;
+      }
+
+      // 确保pageNum在有效范围内
+      if (pageNum < 0 || pageNum > 6) {
+        console.error("无效的页面编号:", pageNum);
+        return;
+      }
+
+      // 确保targetMesh是有效的
+      if (!targetMesh) {
+        console.error("无效的目标网格对象");
+        return;
+      }
+
+      isAnimating = true;
+      console.log("开始重置到页面:", pageNum, "目标网格类型:", targetMesh.userData.type);
+
+      // 设置当前页面 - 根据targetMesh类型确保pageNum正确匹配
+      if (targetMesh === coverMesh) {
+        pageNum = 0;
+      } else if (targetMesh === pageMesh) {
+        pageNum = 1;
+      } else if (targetMesh === page2Mesh) {
+        pageNum = 2;
+      } else if (targetMesh === page3Mesh) {
+        pageNum = 3;
+      } else if (targetMesh === page4Mesh) {
+        pageNum = 4;
+      } else if (targetMesh === page5Mesh) {
+        pageNum = 5;
+      } else if (targetMesh === page6Mesh) {
+        pageNum = 6;
+      }
+
+      // 更新当前页码
+      currentPage = pageNum;
+      console.log("实际跳转页面:", pageNum);
+
+      // 清除聚焦状态
+      if (focusedPage) {
+        console.log("清除聚焦状态:", focusedPage.userData.type);
+        focusedPage = null;
+      }
+
+      // 获取参考位置和大小
+      const coverPos = window.coverOriginalPosition || { x: 0, y: 0, z: 2 };
+      const coverScale = window.coverOriginalScale || { x: 1.3, y: 1.3, z: 1.3 };
+      console.log("参考位置:", coverPos, "参考大小:", coverScale);
+
+      // 先停止所有视频
+      stopAllVideos();
+
+      // 特殊处理封面页面
+      if (pageNum === 0) {
+        console.log("重置到封面页面");
+        // 封面页面时，只显示封面
+        if (coverMesh) coverMesh.visible = true;
+        if (pageMesh) pageMesh.visible = false;
+        if (page2Mesh) page2Mesh.visible = false;
+        if (page3Mesh) page3Mesh.visible = false;
+        if (page4Mesh) page4Mesh.visible = false;
+        if (page5Mesh) page5Mesh.visible = false;
+        if (page6Mesh) page6Mesh.visible = false;
+
+        if (coverMesh) {
+          gsap.to(coverMesh.position, {
+            x: 0,
+            y: 0,
+            z: 2,
+            duration: 1,
+            ease: "power2.inOut"
+          });
+
+          gsap.to(coverMesh.scale, {
+            x: 1.3,
+            y: 1.3,
+            z: 1.3,
+            duration: 1,
+            ease: "power2.inOut"
+          });
+
+          gsap.to(coverMesh.rotation, {
+            y: 0,
+            duration: 1,
+            ease: "power2.inOut"
+          });
+        }
+
+        // 播放封面视频
+        if (coverVideoElement) {
+          coverVideoElement.currentTime = 0;
+          coverVideoElement.play().catch(e => console.error('无法播放封面视频:', e));
+        }
+
+        // 调整相机位置
+        gsap.to(camera.position, {
+          x: 0,
+          y: 2,
+          z: 12,
+          duration: 1,
+          ease: "power2.inOut",
+          onComplete: function () {
+            isAnimating = false;
+            console.log("封面页面重置完成");
+            logPagePositions();
+          }
+        });
+
+        return;
+      }
+
+      // 非封面页面处理
+      console.log("处理非封面页面:", pageNum);
+
+      // 设置页面可见性 - 确保当前页面及之前的页面都可见
+      console.log("设置页面可见性:");
+      if (coverMesh) {
+        coverMesh.visible = true;
+        console.log("- 封面页面可见");
+      }
+
+      if (pageMesh) {
+        pageMesh.visible = pageNum >= 1;
+        console.log(`- 第一页${pageNum >= 1 ? '可见' : '不可见'}`);
+      }
+
+      if (page2Mesh) {
+        page2Mesh.visible = pageNum >= 2;
+        console.log(`- 第二页${pageNum >= 2 ? '可见' : '不可见'}`);
+      }
+
+      if (page3Mesh) {
+        page3Mesh.visible = pageNum >= 3;
+        console.log(`- 第三页${pageNum >= 3 ? '可见' : '不可见'}`);
+      }
+
+      if (page4Mesh) {
+        page4Mesh.visible = pageNum >= 4;
+        console.log(`- 第四页${pageNum >= 4 ? '可见' : '不可见'}`);
+      }
+
+      if (page5Mesh) {
+        page5Mesh.visible = pageNum >= 5;
+        console.log(`- 第五页${pageNum >= 5 ? '可见' : '不可见'}`);
+      }
+
+      if (page6Mesh) {
+        page6Mesh.visible = pageNum >= 6;
+        console.log(`- 第六页${pageNum >= 6 ? '可见' : '不可见'}`);
+      }
+
+      // 确认当前目标页面对象
+      let currentTargetMesh = targetMesh;
+
+      // 确保目标页面对象正确
+      switch (pageNum) {
+        case 1: currentTargetMesh = pageMesh; break;
+        case 2: currentTargetMesh = page2Mesh; break;
+        case 3: currentTargetMesh = page3Mesh; break;
+        case 4: currentTargetMesh = page4Mesh; break;
+        case 5: currentTargetMesh = page5Mesh; break;
+        case 6: currentTargetMesh = page6Mesh; break;
+      }
+
+      if (!currentTargetMesh) {
+        console.error("找不到目标页面对象，重置失败:", pageNum);
+        isAnimating = false;
+        return;
+      }
+
+      // 收集所有当前可见的页面
+      const visiblePages = [];
+      if (coverMesh && coverMesh.visible) visiblePages.push(coverMesh);
+      if (pageMesh && pageMesh.visible) visiblePages.push(pageMesh);
+      if (page2Mesh && page2Mesh.visible) visiblePages.push(page2Mesh);
+      if (page3Mesh && page3Mesh.visible) visiblePages.push(page3Mesh);
+      if (page4Mesh && page4Mesh.visible) visiblePages.push(page4Mesh);
+      if (page5Mesh && page5Mesh.visible) visiblePages.push(page5Mesh);
+      if (page6Mesh && page6Mesh.visible) visiblePages.push(page6Mesh);
+
+      console.log("可见页面数量:", visiblePages.length);
+
+      // 保存当前目标页面的原始状态
+      if (currentTargetMesh) {
+        saveOriginalTransform(currentTargetMesh);
+      }
+
+      // 设置所有非当前页面的位置 - 将它们移到左侧并缩小
+      visiblePages.forEach(page => {
+        if (page !== currentTargetMesh) {
+          console.log("设置非目标页面位置:", page.userData.type);
+          gsap.to(page.position, {
+            x: -7, // 移到左侧
+            y: 0,
+            z: -2, // 向后移动
+            duration: 1,
+            ease: "power2.inOut"
+          });
+
+          gsap.to(page.scale, {
+            x: 0.9,
+            y: 0.9,
+            z: 0.9,
+            duration: 1,
+            ease: "power2.inOut"
+          });
+
+          gsap.to(page.rotation, {
+            y: -0.2, // 轻微旋转
+            duration: 1,
+            ease: "power2.inOut"
+          });
+        }
+      });
+
+      // 目标页面居中
+      console.log("设置目标页面位置:", currentTargetMesh.userData.type);
+      gsap.to(currentTargetMesh.position, {
+        x: coverPos.x, // 居中位置
+        y: coverPos.y,
+        z: coverPos.z,
+        duration: 1,
+        ease: "power2.inOut"
+      });
+
+      gsap.to(currentTargetMesh.scale, {
+        x: coverScale.x,
+        y: coverScale.y,
+        z: coverScale.z,
+        duration: 1,
+        ease: "power2.inOut"
+      });
+
+      gsap.to(currentTargetMesh.rotation, {
+        y: 0, // 正面朝向
+        duration: 1,
+        ease: "power2.inOut"
+      });
+
+      // 确保目标页面在最上层
+      console.log("将目标页面移到最上层:", currentTargetMesh.userData.type);
+      bookContainer.remove(currentTargetMesh);
+      bookContainer.add(currentTargetMesh);
+
+      // 播放当前页面视频
+      console.log("播放当前页面视频:", pageNum);
+      switch (pageNum) {
+        case 1:
+          if (page1VideoElement) {
+            page1VideoElement.currentTime = 0;
+            page1VideoElement.play().catch(e => console.error('无法播放page1视频:', e));
+          }
+          break;
+        case 2:
+          if (page2VideoElement) {
+            page2VideoElement.currentTime = 0;
+            page2VideoElement.play().catch(e => console.error('无法播放page2视频:', e));
+          }
+          break;
+        case 3:
+          if (page3VideoElement) {
+            page3VideoElement.currentTime = 0;
+            page3VideoElement.play().catch(e => console.error('无法播放page3视频:', e));
+          }
+          break;
+        case 4:
+          if (page4VideoElement) {
+            page4VideoElement.currentTime = 0;
+            page4VideoElement.play().catch(e => console.error('无法播放page4视频:', e));
+          }
+          break;
+        case 5:
+          if (page5VideoElement) {
+            page5VideoElement.currentTime = 0;
+            page5VideoElement.play().catch(e => console.error('无法播放page5视频:', e));
+          }
+          break;
+        case 6:
+          if (page6VideoElement) {
+            page6VideoElement.currentTime = 0;
+            page6VideoElement.play().catch(e => console.error('无法播放page6视频:', e));
+          }
+          break;
+      }
+
+      // 调整相机位置
+      gsap.to(camera.position, {
+        x: 0,
+        y: 2,
+        z: 12,
+        duration: 1,
+        ease: "power2.inOut",
+        onComplete: function () {
+          isAnimating = false;
+          console.log("页面重置完成，当前页面:", pageNum);
+          logPagePositions();
+          console.log("===== 结束重置页面 =====");
+        }
+      });
+    }
+
+    // 停止所有视频的辅助函数 - 确保一次只有一个视频播放
+    function stopAllVideos() {
+      // 检查每个视频元素，如果正在播放则暂停
+      if (coverVideoElement && !coverVideoElement.paused) coverVideoElement.pause();
+      if (page1VideoElement && !page1VideoElement.paused) page1VideoElement.pause();
+      if (page2VideoElement && !page2VideoElement.paused) page2VideoElement.pause();
+      if (page3VideoElement && !page3VideoElement.paused) page3VideoElement.pause();
+      if (page4VideoElement && !page4VideoElement.paused) page4VideoElement.pause();
+      if (page5VideoElement && !page5VideoElement.paused) page5VideoElement.pause();
+      if (page6VideoElement && !page6VideoElement.paused) page6VideoElement.pause();
+    }
+  </script>
 </body>
 
 </html>

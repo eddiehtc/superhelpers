@@ -11,12 +11,12 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'storytelling/index.html'),
-        game: resolve(__dirname, 'index.html'),
+        main: resolve(__dirname, 'index.html'),
+        game: resolve(__dirname, 'game.html'),
       },
     },
   },
   server: {
-    open: '/storytelling/index.html',
+    open: '/index.html',
   },
 });
