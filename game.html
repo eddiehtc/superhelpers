@@ -253,6 +253,20 @@
       color: #333;
       transform: scale(1.05);
     }
+
+    .fade-in {
+      animation: fadeInAnimation 1.5s ease-out forwards;
+    }
+
+    @keyframes fadeInAnimation {
+      0% {
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
   </style>
   <!--[if IE]>
 		  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -333,6 +347,20 @@
           window.dispatchEvent(new Event('gamestart'));
         }, 1000);
       });
+    });
+
+    // Apply fade-in effect for all game starts
+    window.addEventListener('DOMContentLoaded', function () {
+      // Add fade-in effect to the start screen
+      document.querySelector('.start-screen').classList.add('fade-in');
+
+      // Auto-focus the start button so users can press Enter to start the game
+      setTimeout(() => {
+        const startButton = document.querySelector('.start-button');
+        if (startButton) {
+          startButton.focus();
+        }
+      }, 1500);
     });
   </script>
 </body>
