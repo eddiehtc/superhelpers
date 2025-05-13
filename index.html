@@ -13,7 +13,7 @@
 	<link rel="shortcut icon" href="favicon.ico">
 	<link href='https://fonts.googleapis.com/css?family=Playfair+Display:400,700,700italic' rel='stylesheet'
 		type='text/css'>
-	<!-- 引入Howler.js音频库 -->
+	<!-- Import Howler.js audio library -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 	<!-- CSS will be imported via main.js -->
 	<style>
@@ -291,19 +291,33 @@
 			document.getElementById('replayMessage').style.display = 'none';
 			document.getElementById('instructions').style.display = 'none';
 
-			startButton.addEventListener('click', function () {
-				// Hide start screen with fade out effect
-				startScreen.style.transition = 'opacity 1s ease-out';
-				startScreen.style.opacity = '0';
-				setTimeout(() => {
-					startScreen.style.display = 'none';
-					// Show game elements
-					document.querySelector('.header').style.display = 'block';
-					document.getElementById('instructions').style.display = 'block';
-					// Trigger game initialization (defined in main.js)
-					window.dispatchEvent(new Event('gamestart'));
-				}, 1000);
-			});
+			// Check if redirected from story page
+			const isFromStory = window.location.href.includes('?fromStory=true');
+
+			if (isFromStory) {
+				// If coming from story page, start game directly
+				console.log('Coming from story page, starting game directly');
+				startScreen.style.display = 'none';
+				document.querySelector('.header').style.display = 'block';
+				document.getElementById('instructions').style.display = 'block';
+				// Trigger game initialization
+				window.dispatchEvent(new Event('gamestart'));
+			} else {
+				// Normal display of start button
+				startButton.addEventListener('click', function () {
+					// Hide start screen with fade out effect
+					startScreen.style.transition = 'opacity 1s ease-out';
+					startScreen.style.opacity = '0';
+					setTimeout(() => {
+						startScreen.style.display = 'none';
+						// Show game elements
+						document.querySelector('.header').style.display = 'block';
+						document.getElementById('instructions').style.display = 'block';
+						// Trigger game initialization (defined in main.js)
+						window.dispatchEvent(new Event('gamestart'));
+					}, 1000);
+				});
+			}
 		});
 	</script>
 </body>
