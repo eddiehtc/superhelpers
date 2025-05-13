@@ -17,13 +17,17 @@ var Colors = {
   flowerPink: 0xff86c0,
   flowerStem: 0x4caf50,
   flowerYellow: 0xffeb3b,
-  // 繪本場景顏色
-  grassGreen: 0x7cba6c, // 草地綠色
-  treeBark: 0x8b5a2b, // 樹幹棕色
-  leafGreen: 0x4caf50, // 樹葉綠色
+  // Picture book scene colors
+  grassGreen: 0x7cba6c, // Green grass
+  treeBark: 0x8b5a2b, // Tree bark brown
+  leafGreen: 0x4caf50, // Leaf green
+  // Rhododendron colors
+  rhododendronPink: 0xff1493, // Rhododendron pink
+  rhododendronPurple: 0x8a2be2, // Rhododendron purple
+  rhododendronLeaf: 0x006400, // Rhododendron leaf dark green
 };
 
-// 音频对象
+// Audio object
 var Audio = {
   backgroundMusic: null,
   collectSound: null,
@@ -31,11 +35,11 @@ var Audio = {
   initialized: false,
   muted: false,
 
-  // 初始化音频
+  // Initialize audio
   init: function () {
     if (this.initialized) return;
 
-    // 加载用户偏好的音频设置
+    // Load user audio preferences
     if (typeof Storage !== 'undefined') {
       var savedMuted = localStorage.getItem('gameMuted');
       if (savedMuted !== null) {
@@ -43,7 +47,7 @@ var Audio = {
       }
     }
 
-    // 创建音频对象
+    // Create audio objects
     this.backgroundMusic = new Howl({
       src: ['./audio/background-music.mp3'],
       loop: true,
@@ -59,31 +63,31 @@ var Audio = {
 
     this.dangerSound = new Howl({
       src: ['./audio/danger-sound.mp3'],
-      volume: 0.6, // 降低音量，让警报声不那么突兀
+      volume: 0.6, // Lower volume to make the alert sound less jarring
       sprite: {
-        main: [0, 2000], // 只播放前2秒
-        alt: [0, 800], // 备选音效只播放前0.8秒
+        main: [0, 2000], // Only play the first 2 seconds
+        alt: [0, 800], // Alternative sound only plays the first 0.8 seconds
       },
       autoplay: false,
     });
 
-    // 应用静音设置
+    // Apply mute settings
     Howler.mute(this.muted);
 
-    // 设置音频控制
+    // Setup audio controls
     this.setupAudioControls();
 
     this.initialized = true;
   },
 
-  // 设置音频控制
+  // Setup audio controls
   setupAudioControls: function () {
     var toggleAudioBtn = document.getElementById('toggleAudio');
 
     if (toggleAudioBtn) {
       var audioIcon = toggleAudioBtn.querySelector('.audio-icon');
 
-      // 确保按钮显示正确的图标
+      // Make sure button displays the correct icon
       if (audioIcon) {
         audioIcon.textContent = this.muted ? '🔇' : '🔊';
       }
@@ -95,12 +99,12 @@ var Audio = {
     }
   },
 
-  // 切换静音状态
+  // Toggle mute state
   toggleMute: function () {
     this.muted = !this.muted;
     Howler.mute(this.muted);
 
-    // 保存用户偏好
+    // Save user preferences
     if (typeof Storage !== 'undefined') {
       localStorage.setItem('gameMuted', this.muted);
     }
@@ -108,7 +112,7 @@ var Audio = {
     return this.muted;
   },
 
-  // 播放背景音乐
+  // Play background music
   playBackgroundMusic: function () {
     if (!this.initialized) this.init();
     if (!this.backgroundMusic.playing()) {
@@ -116,23 +120,23 @@ var Audio = {
     }
   },
 
-  // 暂停背景音乐
+  // Pause background music
   pauseBackgroundMusic: function () {
     if (this.initialized && this.backgroundMusic.playing()) {
       this.backgroundMusic.pause();
     }
   },
 
-  // 播放收集音效
+  // Play collection sound effect
   playCollectSound: function () {
     if (!this.initialized) this.init();
     this.collectSound.play();
   },
 
-  // 播放危险音效
+  // Play danger sound effect
   playDangerSound: function () {
     if (!this.initialized) this.init();
-    // 随机选择主要音效或备选音效，增加游戏的多样性
+    // Randomly choose main or alternative sound effect for variety
     var sound = Math.random() > 0.5 ? 'main' : 'alt';
     this.dangerSound.play(sound);
   },
@@ -230,7 +234,7 @@ function resetGame() {
   };
   fieldLevel.innerHTML = Math.floor(game.level);
 
-  // 重启背景音乐
+  // Restart background music
   if (Audio.initialized) {
     Audio.playBackgroundMusic();
   }
@@ -413,51 +417,51 @@ var Pilot = function () {
   var face = new THREE.Mesh(faceGeom, faceMat);
   this.mesh.add(face);
 
-  // 添加黄色帽子 - 更大更明显
+  // Add a yellow hat - larger and more visible
   var hatGeom = new THREE.CylinderGeometry(8, 10, 8, 8);
   var hatMat = new THREE.MeshPhongMaterial({
-    color: 0xffdd00, // 更亮的黄色
+    color: 0xffdd00, // Brighter yellow
     flatShading: true,
-    shininess: 30, // 增加光泽
+    shininess: 30, // Add more shine
   });
   var hat = new THREE.Mesh(hatGeom, hatMat);
-  hat.position.y = 10; // 更高的位置
+  hat.position.y = 10; // Higher position
   hat.position.x = 0;
   hat.position.z = 0;
-  hat.rotation.x = Math.PI * 0.05; // 稍微向前倾斜
+  hat.rotation.x = Math.PI * 0.05; // Tilted slightly forward
   this.mesh.add(hat);
 
-  // 添加更大的帽子檐
+  // Add larger hat brim
   var brimGeom = new THREE.CylinderGeometry(11, 11, 1.5, 8);
   var brimMat = new THREE.MeshPhongMaterial({
-    color: 0xffdd00, // 匹配帽子的颜色
+    color: 0xffdd00, // Matching hat color
     flatShading: true,
   });
   var brim = new THREE.Mesh(brimGeom, brimMat);
-  brim.position.y = 6; // 帽子底部
+  brim.position.y = 6; // Bottom of hat
   brim.position.x = 0;
   brim.position.z = 0;
   this.mesh.add(brim);
 
-  // 添加醒目的帽子装饰带
+  // Add striking hat decoration band
   var bandGeom = new THREE.CylinderGeometry(8.1, 8.1, 2, 8);
   var bandMat = new THREE.MeshPhongMaterial({
-    color: Colors.beeBlack, // 黑色装饰带
+    color: Colors.beeBlack, // Black decorative band
     flatShading: true,
   });
   var band = new THREE.Mesh(bandGeom, bandMat);
-  band.position.y = 8; // 帽子中部
+  band.position.y = 8; // Middle of hat
   this.mesh.add(band);
 
-  // 添加帽子顶部装饰
+  // Add hat top decoration
   var topDecorGeom = new THREE.SphereGeometry(2, 8, 8);
   var topDecorMat = new THREE.MeshPhongMaterial({
-    color: 0xffdd00, // 匹配帽子的颜色
+    color: 0xffdd00, // Matching hat color
     flatShading: false,
-    shininess: 60, // 高光泽
+    shininess: 60, // High shine
   });
   var topDecor = new THREE.Mesh(topDecorGeom, topDecorMat);
-  topDecor.position.y = 14; // 帽子顶部
+  topDecor.position.y = 14; // Top of hat
   topDecor.position.x = 0;
   topDecor.position.z = 0;
   this.mesh.add(topDecor);
@@ -875,9 +879,9 @@ var Sea = function () {
 
   this.waves = vertices;
 
-  // 修改為綠色地面 - 使用更明顯的綠色
+  // Modified to green ground - using more vibrant green
   var mat = new THREE.MeshPhongMaterial({
-    color: 0x4caf50, // 更鮮明的綠色
+    color: 0x4caf50, // More vibrant green
     transparent: false,
     flatShading: true,
   });
@@ -907,29 +911,29 @@ var Cloud = function () {
   this.mesh = new THREE.Object3D();
   this.mesh.name = 'cloud';
 
-  // 使用球體代替方塊，創建更柔和的外觀
-  var geom = new THREE.SphereGeometry(15, 12, 12); // 增加細分數量以獲得更平滑的球體
+  // Use spheres instead of cubes to create a softer appearance
+  var geom = new THREE.SphereGeometry(15, 12, 12); // Increase subdivision count for smoother spheres
   var mat = new THREE.MeshPhongMaterial({
     color: Colors.white,
     transparent: true,
-    opacity: 0.6, // 降低不透明度使其更輕盈
+    opacity: 0.6, // Reduce opacity to make it more ethereal
     flatShading: false,
     shininess: 0,
   });
 
-  // 創建雲朵的主體部分
-  var nBlocs = 3 + Math.floor(Math.random() * 4); // 增加更多的球體
+  // Create the main part of the cloud
+  var nBlocs = 3 + Math.floor(Math.random() * 4); // Add more spheres
   for (var i = 0; i < nBlocs; i++) {
     var m = new THREE.Mesh(geom.clone(), mat);
 
-    // 更自然的分布
+    // More natural distribution
     var angle = (i / nBlocs) * Math.PI * 2;
-    var radius = 7 + Math.random() * 7; // 更大的分布範圍
+    var radius = 7 + Math.random() * 7; // Larger distribution range
     m.position.x = Math.cos(angle) * radius;
     m.position.y = Math.sin(angle) * radius * 0.5;
-    m.position.z = Math.random() * 7 - 3.5; // 前後分布也更豐富
+    m.position.z = Math.random() * 7 - 3.5; // More varied front-back distribution
 
-    // 各種大小的球體
+    // Various sizes of spheres
     var s = 0.3 + Math.random() * 0.6;
     m.scale.set(
       s * (1.2 + Math.random() * 0.3),
@@ -940,18 +944,18 @@ var Cloud = function () {
     m.rotation.z = Math.random() * Math.PI * 2;
     m.rotation.y = Math.random() * Math.PI * 2;
 
-    // 儲存原始位置用於動畫
+    // Store original position for animation
     m.originalX = m.position.x;
     m.originalY = m.position.y;
     m.originalZ = m.position.z;
-    m.pulseSpeed = 0.5 + Math.random() * 0.8; // 每個部分的脈動速度不同
+    m.pulseSpeed = 0.5 + Math.random() * 0.8; // Different pulse speed for each part
 
     this.mesh.add(m);
     m.castShadow = true;
     m.receiveShadow = true;
   }
 
-  // 添加整體的漂浮動畫參數
+  // Add overall floating animation parameters
   this.angleX = Math.random() * Math.PI * 2;
   this.angleY = Math.random() * Math.PI * 2;
   this.angleZ = Math.random() * Math.PI * 2;
@@ -959,10 +963,10 @@ var Cloud = function () {
 };
 
 Cloud.prototype.rotate = function () {
-  // 使雲朵旋轉更平滑
+  // Make cloud rotation smoother
   var time = Date.now() * 0.0001;
 
-  // 整體雲朵緩慢旋轉
+  // Overall slow cloud rotation
   this.angleX += 0.001 * this.speed;
   this.angleY += 0.0015 * this.speed;
   this.angleZ += 0.001 * this.speed;
@@ -975,20 +979,20 @@ Cloud.prototype.rotate = function () {
   for (var i = 0; i < l; i++) {
     var m = this.mesh.children[i];
 
-    // 各部分獨立的微動
+    // Independent subtle movement for each part
     if (m.originalY !== undefined) {
-      // 水平方向輕微擺動
+      // Slight horizontal sway
       m.position.x = m.originalX + Math.sin(time * m.pulseSpeed + i) * 0.8;
-      // 垂直方向輕微浮動
+      // Slight vertical float
       m.position.y =
         m.originalY + Math.sin(time * m.pulseSpeed + i + Math.PI / 2) * 0.6;
-      // 深度方向也有微動
+      // Depth movement as well
       if (m.originalZ !== undefined) {
         m.position.z =
           m.originalZ + Math.sin(time * m.pulseSpeed * 0.7 + i) * 0.5;
       }
 
-      // 各部分微小旋轉
+      // Slight rotation for each part
       m.rotation.x += 0.001 * (i + 1);
       m.rotation.y += 0.001 * (i + 1);
       m.rotation.z += 0.001 * (i + 1);
@@ -997,32 +1001,76 @@ Cloud.prototype.rotate = function () {
 };
 
 var Ennemy = function () {
-  // Create garbage/pollution as dangerous objects
+  // Create rhododendron flowers as dangerous objects
   this.mesh = new THREE.Object3D();
 
-  // Main body - trash bag
-  var trashGeom = new THREE.IcosahedronGeometry(8, 1);
-  var trashMat = new THREE.MeshPhongMaterial({
-    color: Colors.red,
-    shininess: 0,
+  // Main flower - rhododendron blossom
+  var flowerGeom = new THREE.SphereGeometry(7, 8, 8);
+  var flowerMat = new THREE.MeshPhongMaterial({
+    color: Colors.rhododendronPink,
+    shininess: 5,
     specular: 0xffffff,
+    flatShading: false,
+  });
+  var flower = new THREE.Mesh(flowerGeom, flowerMat);
+  flower.scale.set(1, 0.8, 1);
+  flower.castShadow = true;
+  this.mesh.add(flower);
+
+  // Create petals for the rhododendron flower
+  var petalCount = 5;
+  for (var i = 0; i < petalCount; i++) {
+    var petalGeom = new THREE.TetrahedronGeometry(5, 0);
+    var petalMat = new THREE.MeshPhongMaterial({
+      color: Colors.rhododendronPurple,
+      shininess: 0,
+      flatShading: true,
+    });
+    var petal = new THREE.Mesh(petalGeom, petalMat);
+
+    // Position petals in a circular pattern
+    var angle = (Math.PI * 2 * i) / petalCount;
+    var radius = 5;
+    petal.position.x = Math.cos(angle) * radius;
+    petal.position.z = Math.sin(angle) * radius;
+    petal.position.y = 2;
+
+    // Rotate petals outward
+    petal.rotation.x = Math.PI / 4;
+    petal.rotation.y = angle;
+
+    this.mesh.add(petal);
+  }
+
+  // Add leaves
+  var leafGeom = new THREE.TetrahedronGeometry(4, 1);
+  var leafMat = new THREE.MeshPhongMaterial({
+    color: Colors.rhododendronLeaf,
+    shininess: 0,
     flatShading: true,
   });
-  var trashBag = new THREE.Mesh(trashGeom, trashMat);
-  trashBag.scale.set(1, 1.2, 0.8);
-  trashBag.castShadow = true;
-  this.mesh.add(trashBag);
 
-  // Add warning sign to indicate danger
-  var warningGeom = new THREE.TorusGeometry(3, 1, 8, 16);
+  // Add multiple leaves around the base
+  for (var i = 0; i < 3; i++) {
+    var leaf = new THREE.Mesh(leafGeom, leafMat);
+    var angle = (Math.PI * 2 * i) / 3;
+    leaf.position.x = Math.cos(angle) * 5;
+    leaf.position.z = Math.sin(angle) * 5;
+    leaf.position.y = -5;
+    leaf.rotation.x = -Math.PI / 4;
+    leaf.rotation.y = angle;
+    this.mesh.add(leaf);
+  }
+
+  // Add warning visual - slight glow effect to indicate danger
+  var warningGeom = new THREE.SphereGeometry(9, 8, 8);
   var warningMat = new THREE.MeshPhongMaterial({
-    color: Colors.black,
-    shininess: 0,
-    flatShading: true,
+    color: Colors.rhododendronPink,
+    transparent: true,
+    opacity: 0.3,
+    shininess: 10,
   });
   var warning = new THREE.Mesh(warningGeom, warningMat);
-  warning.position.z = 5;
-  warning.rotation.x = Math.PI / 2;
   this.mesh.add(warning);
 
   this.angle = 0;
@@ -1081,7 +1129,7 @@ EnnemiesHolder.prototype.rotateEnnemies = function () {
       particlesHolder.spawnParticles(
         ennemy.mesh.position.clone(),
         15,
-        Colors.red, // Keep red particles to indicate danger
+        Colors.rhododendronPink, // Use rhododendron pink for particles to indicate danger
         3
       );
 
@@ -1092,7 +1140,7 @@ EnnemiesHolder.prototype.rotateEnnemies = function () {
       ambientLight.intensity = 2;
 
       removeEnergy();
-      // 播放危险音效
+      // Play danger sound effect
       Audio.playDangerSound();
       i--;
     } else if (ennemy.angle > Math.PI) {
@@ -1269,7 +1317,7 @@ CoinsHolder.prototype.rotateCoins = function () {
         0.8
       );
       addEnergy();
-      // 播放收集音效
+      // Play collection sound effect
       Audio.playCollectSound();
       i--;
     } else if (coin.angle > Math.PI) {
@@ -1378,7 +1426,7 @@ function loop() {
       (game.targetBaseSpeed - game.baseSpeed) * deltaTime * 0.02;
     game.speed = game.baseSpeed * game.planeSpeed;
 
-    // 确保背景音乐正在播放
+    // Ensure background music is playing
     Audio.playBackgroundMusic();
   } else if (game.status == 'gameover') {
     // Unlock pointer when game is over
@@ -1386,7 +1434,7 @@ function loop() {
       unlockPointer();
     }
 
-    // 暂停背景音乐
+    // Pause background music
     Audio.pauseBackgroundMusic();
 
     game.speed *= 0.99;
@@ -1406,7 +1454,7 @@ function loop() {
       unlockPointer();
     }
 
-    // 确保背景音乐已暂停
+    // Ensure background music is paused
     Audio.pauseBackgroundMusic();
   }
 
@@ -1574,12 +1622,12 @@ function init(event) {
   createEnnemies();
   createParticles();
 
-  // 完全替換createTrees函數
+  // Completely replace createTrees function
   console.log('Creating trees...');
   createTrees();
   console.log('Trees initialization complete');
 
-  // 設置蜜蜂模式
+  // Set bee mode
   window.isBeeMode = true;
 
   // Initialize audio
@@ -1721,36 +1769,36 @@ function handleEscapeKey(e) {
   }
 }
 
-// 添加樹木類型 - 更鮮明的顏色和更簡單的結構
+// Add tree type - more vibrant colors and simpler structure
 var Tree = function () {
   this.mesh = new THREE.Object3D();
 
-  // 樹幹 - 更粗更高
+  // Tree trunk - thicker and taller
   var trunkGeom = new THREE.CylinderGeometry(5, 8, 60, 8);
   var trunkMat = new THREE.MeshPhongMaterial({
-    color: 0x8b4513, // 棕色
+    color: 0x8b4513, // Brown
     flatShading: true,
     shininess: 0,
   });
   var trunk = new THREE.Mesh(trunkGeom, trunkMat);
-  trunk.position.y = 30; // 樹幹高度
+  trunk.position.y = 30; // Trunk height
   trunk.castShadow = true;
   trunk.receiveShadow = true;
   this.mesh.add(trunk);
 
-  // 樹冠 - 更大更明顯
+  // Tree crown - larger and more prominent
   var crownGeom = new THREE.SphereGeometry(25, 16, 16);
   var crownMat = new THREE.MeshPhongMaterial({
-    color: 0x2e8b57, // 海藍寶石綠
+    color: 0x2e8b57, // Sea green
     flatShading: true,
     shininess: 0,
   });
   var crown = new THREE.Mesh(crownGeom, crownMat);
-  crown.position.y = 70; // 樹冠位置
+  crown.position.y = 70; // Crown position
   crown.castShadow = true;
   this.mesh.add(crown);
 
-  // 添加第二層樹冠
+  // Add second layer of crown
   var crown2 = new THREE.Mesh(crownGeom, crownMat);
   crown2.position.y = 50;
   crown2.scale.set(0.8, 0.8, 0.8);
@@ -1758,27 +1806,27 @@ var Tree = function () {
   this.mesh.add(crown2);
 };
 
-// 完全替換createTrees函數
+// Completely replace createTrees function
 function createTrees() {
   console.log('Creating trees...');
 
-  // 在遊戲開始時創建的半徑，因為game.seaRadius是一個常數
+  // Radius at game start, since game.seaRadius is a constant
   const groundY = -game.seaRadius;
   console.log('Ground level Y position:', groundY);
 
-  // 建立一個非常大的樹在正前方
+  // Build a very large tree directly in front
   var mainTree = new Tree();
-  mainTree.mesh.position.set(0, groundY, -300); // 正前方，與地面齊平
-  mainTree.mesh.scale.set(5, 5, 5); // 非常大的樹
+  mainTree.mesh.position.set(0, groundY, -300); // Directly in front, level with the ground
+  mainTree.mesh.scale.set(5, 5, 5); // Very large tree
   scene.add(mainTree.mesh);
   console.log('Large tree added at position:', mainTree.mesh.position);
 
-  // 在前方左右添加4棵樹形成一個圓圈
+  // Add 4 trees in front left and right to form a circle
   const treePositions = [
-    { x: 150, z: -250 }, // 右前
-    { x: -150, z: -250 }, // 左前
-    { x: 50, z: -150 }, // 近右
-    { x: -50, z: -150 }, // 近左
+    { x: 150, z: -250 }, // Front right
+    { x: -150, z: -250 }, // Front left
+    { x: 50, z: -150 }, // Near right
+    { x: -50, z: -150 }, // Near left
   ];
 
   for (let i = 0; i < treePositions.length; i++) {
