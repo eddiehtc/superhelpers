@@ -50,6 +50,11 @@
   <!-- Skip button -->
   <button id="skipButton">Skip Story</button>
 
+  <!-- 添加背景音乐元素 -->
+  <audio id="bgMusic" loop preload="auto">
+    <source src="storytelling/bg-music.mp3" type="audio/mpeg">
+  </audio>
+
   <!-- Preload two videos but hide them -->
   <video id="videoPreload" preload="auto" muted playsinline>
     <source src="storytelling/BG-Image.mp4" type="video/mp4">
@@ -86,6 +91,7 @@
     let focusedPage = null;
     let originalPositions = {};
     let originalScales = {};
+    let bgMusicElement = null; // 背景音乐元素
 
     // Variables for alternating video playback
     let videoElement1, videoElement2;
@@ -308,6 +314,13 @@
         console.log("Clicked Skip button, redirecting to game page");
         window.location.href = 'game.html';
       });
+
+      // 初始化并播放背景音乐
+      bgMusicElement = document.getElementById('bgMusic');
+      if (bgMusicElement) {
+        bgMusicElement.volume = 0.6; // 将初始音量从0.8降低到0.6
+        bgMusicElement.play().catch(e => console.error('无法播放背景音乐:', e));
+      }
     }
 
     // Add Skip functionality - return to cover without animation
@@ -375,25 +388,207 @@
       if (videoElement2 && videoElement2.paused) {
         videoElement2.play().catch(e => console.error('Unable to play background video2:', e));
       }
+
+      // 只有在當前頁面是封面時才播放封面視頻和音頻
       if (coverVideoElement && coverVideoElement.paused) {
+        // 臨時移除播放事件監聽器，確保只有在當前頁面是封面時才播放音頻
+        const oldPlayHandler = coverVideoElement._playHandler;
+        if (oldPlayHandler) {
+          coverVideoElement.removeEventListener('play', oldPlayHandler);
+        }
+        
+        if (currentPage === 0) {
+          // 如果當前頁面是封面，添加監聽器來播放音頻
+          const playHandler = function() {
+            const coverAudio = document.getElementById('coverAudio');
+            if (coverAudio) {
+              coverAudio.currentTime = 0;
+              coverAudio.play().catch(e => console.error('無法播放cover音頻:', e));
+              
+              // 降低背景音乐音量
+              if (bgMusicElement) {
+                bgMusicElement.volume = 0.05; // 从0.1降低到0.05
+              }
+            }
+          };
+          coverVideoElement._playHandler = playHandler;
+          coverVideoElement.addEventListener('play', playHandler);
+        }
+        
         coverVideoElement.play().catch(e => console.error('Unable to play cover video:', e));
       }
+
+      // 只有在當前頁面是第一頁時才播放page1視頻和音頻
       if (page1VideoElement && page1VideoElement.paused) {
+        // 臨時移除播放事件監聽器
+        const oldPlayHandler = page1VideoElement._playHandler;
+        if (oldPlayHandler) {
+          page1VideoElement.removeEventListener('play', oldPlayHandler);
+        }
+        
+        if (currentPage === 1) {
+          // 如果當前頁面是第一頁，添加監聽器來播放音頻
+          const playHandler = function() {
+            const page1Audio = document.getElementById('page1Audio');
+            if (page1Audio) {
+              page1Audio.currentTime = 0;
+              page1Audio.play().catch(e => console.error('無法播放page1音頻:', e));
+              
+              // 降低背景音乐音量
+              if (bgMusicElement) {
+                bgMusicElement.volume = 0.05; // 从0.1降低到0.05
+              }
+            }
+          };
+          page1VideoElement._playHandler = playHandler;
+          page1VideoElement.addEventListener('play', playHandler);
+        }
+        
         page1VideoElement.play().catch(e => console.error('Unable to play page1 video:', e));
       }
+
+      // 只有在當前頁面是第二頁時才播放page2視頻和音頻
       if (page2VideoElement && page2VideoElement.paused) {
+        // 臨時移除播放事件監聽器
+        const oldPlayHandler = page2VideoElement._playHandler;
+        if (oldPlayHandler) {
+          page2VideoElement.removeEventListener('play', oldPlayHandler);
+        }
+        
+        if (currentPage === 2) {
+          // 如果當前頁面是第二頁，添加監聽器來播放音頻
+          const playHandler = function() {
+            const page2Audio = document.getElementById('page2Audio');
+            if (page2Audio) {
+              page2Audio.currentTime = 0;
+              page2Audio.play().catch(e => console.error('無法播放page2音頻:', e));
+              
+              // 降低背景音乐音量
+              if (bgMusicElement) {
+                bgMusicElement.volume = 0.05; // 从0.1降低到0.05
+              }
+            }
+          };
+          page2VideoElement._playHandler = playHandler;
+          page2VideoElement.addEventListener('play', playHandler);
+        }
+        
         page2VideoElement.play().catch(e => console.error('Unable to play page2 video:', e));
       }
+      
+      // 只有在當前頁面是第三頁時才播放page3視頻和音頻
       if (page3VideoElement && page3VideoElement.paused) {
+        // 臨時移除播放事件監聽器
+        const oldPlayHandler = page3VideoElement._playHandler;
+        if (oldPlayHandler) {
+          page3VideoElement.removeEventListener('play', oldPlayHandler);
+        }
+        
+        if (currentPage === 3) {
+          // 如果當前頁面是第三頁，添加監聽器來播放音頻
+          const playHandler = function() {
+            const page3Audio = document.getElementById('page3Audio');
+            if (page3Audio) {
+              page3Audio.currentTime = 0;
+              page3Audio.play().catch(e => console.error('無法播放page3音頻:', e));
+              
+              // 降低背景音乐音量
+              if (bgMusicElement) {
+                bgMusicElement.volume = 0.05; // 从0.1降低到0.05
+              }
+            }
+          };
+          page3VideoElement._playHandler = playHandler;
+          page3VideoElement.addEventListener('play', playHandler);
+        }
+        
         page3VideoElement.play().catch(e => console.error('Unable to play page3 video:', e));
       }
+      
+      // 只有在當前頁面是第四頁時才播放page4視頻和音頻
       if (page4VideoElement && page4VideoElement.paused) {
+        // 臨時移除播放事件監聽器
+        const oldPlayHandler = page4VideoElement._playHandler;
+        if (oldPlayHandler) {
+          page4VideoElement.removeEventListener('play', oldPlayHandler);
+        }
+        
+        if (currentPage === 4) {
+          // 如果當前頁面是第四頁，添加監聽器來播放音頻
+          const playHandler = function() {
+            const page4Audio = document.getElementById('page4Audio');
+            if (page4Audio) {
+              page4Audio.currentTime = 0;
+              page4Audio.play().catch(e => console.error('無法播放page4音頻:', e));
+              
+              // 降低背景音乐音量
+              if (bgMusicElement) {
+                bgMusicElement.volume = 0.05; // 从0.1降低到0.05
+              }
+            }
+          };
+          page4VideoElement._playHandler = playHandler;
+          page4VideoElement.addEventListener('play', playHandler);
+        }
+        
         page4VideoElement.play().catch(e => console.error('Unable to play page4 video:', e));
       }
+      
+      // 只有在當前頁面是第五頁時才播放page5視頻和音頻
       if (page5VideoElement && page5VideoElement.paused) {
+        // 臨時移除播放事件監聽器
+        const oldPlayHandler = page5VideoElement._playHandler;
+        if (oldPlayHandler) {
+          page5VideoElement.removeEventListener('play', oldPlayHandler);
+        }
+        
+        if (currentPage === 5) {
+          // 如果當前頁面是第五頁，添加監聽器來播放音頻
+          const playHandler = function() {
+            const page5Audio = document.getElementById('page5Audio');
+            if (page5Audio) {
+              page5Audio.currentTime = 0;
+              page5Audio.play().catch(e => console.error('無法播放page5音頻:', e));
+              
+              // 降低背景音乐音量
+              if (bgMusicElement) {
+                bgMusicElement.volume = 0.05; // 从0.1降低到0.05
+              }
+            }
+          };
+          page5VideoElement._playHandler = playHandler;
+          page5VideoElement.addEventListener('play', playHandler);
+        }
+        
         page5VideoElement.play().catch(e => console.error('Unable to play page5 video:', e));
       }
+      
+      // 只有在當前頁面是第六頁時才播放page6視頻和音頻
       if (page6VideoElement && page6VideoElement.paused) {
+        // 臨時移除播放事件監聽器
+        const oldPlayHandler = page6VideoElement._playHandler;
+        if (oldPlayHandler) {
+          page6VideoElement.removeEventListener('play', oldPlayHandler);
+        }
+        
+        if (currentPage === 6) {
+          // 如果當前頁面是第六頁，添加監聽器來播放音頻
+          const playHandler = function() {
+            const page6Audio = document.getElementById('page6Audio');
+            if (page6Audio) {
+              page6Audio.currentTime = 0;
+              page6Audio.play().catch(e => console.error('無法播放page6音頻:', e));
+              
+              // 降低背景音乐音量
+              if (bgMusicElement) {
+                bgMusicElement.volume = 0.05; // 从0.1降低到0.05
+              }
+            }
+          };
+          page6VideoElement._playHandler = playHandler;
+          page6VideoElement.addEventListener('play', playHandler);
+        }
+        
         page6VideoElement.play().catch(e => console.error('Unable to play page6 video:', e));
       }
     }
@@ -636,6 +831,13 @@
       page1VideoElement.crossOrigin = 'anonymous';
       page1VideoElement.preload = 'auto';
 
+      // 創建音頻元素用於播放page1.mp3
+      const page1AudioElement = document.createElement('audio');
+      page1AudioElement.id = 'page1Audio';
+      page1AudioElement.src = 'storytelling/page1.mp3';
+      page1AudioElement.preload = 'auto';
+      document.body.appendChild(page1AudioElement);
+
       // Add video source
       const source = document.createElement('source');
       source.src = 'storytelling/page1.mp4';
@@ -690,6 +892,13 @@
       page2VideoElement.loop = true; // Allow video to loop playback
       page2VideoElement.crossOrigin = 'anonymous';
       page2VideoElement.preload = 'auto'; // Ensure preloading
+
+      // 創建音頻元素用於播放page2.mp3
+      const page2AudioElement = document.createElement('audio');
+      page2AudioElement.id = 'page2Audio';
+      page2AudioElement.src = 'storytelling/page2.mp3';
+      page2AudioElement.preload = 'auto';
+      document.body.appendChild(page2AudioElement);
 
       // Add video source
       const source = document.createElement('source');
@@ -746,6 +955,13 @@
       page3VideoElement.crossOrigin = 'anonymous';
       page3VideoElement.preload = 'auto'; // Ensure preloading
 
+      // 創建音頻元素用於播放page3.mp3
+      const page3AudioElement = document.createElement('audio');
+      page3AudioElement.id = 'page3Audio';
+      page3AudioElement.src = 'storytelling/page3.mp3';
+      page3AudioElement.preload = 'auto';
+      document.body.appendChild(page3AudioElement);
+
       // Add video source
       const source = document.createElement('source');
       source.src = 'storytelling/page3.mp4';
@@ -800,6 +1016,13 @@
       page4VideoElement.loop = true; // Allow video to loop playback
       page4VideoElement.crossOrigin = 'anonymous';
       page4VideoElement.preload = 'auto'; // Ensure preloading
+
+      // 創建音頻元素用於播放page4.mp3
+      const page4AudioElement = document.createElement('audio');
+      page4AudioElement.id = 'page4Audio';
+      page4AudioElement.src = 'storytelling/page4.mp3';
+      page4AudioElement.preload = 'auto';
+      document.body.appendChild(page4AudioElement);
 
       // Add video source
       const source = document.createElement('source');
@@ -856,6 +1079,13 @@
       page5VideoElement.crossOrigin = 'anonymous';
       page5VideoElement.preload = 'auto'; // Ensure preloading
 
+      // 創建音頻元素用於播放page5.mp3
+      const page5AudioElement = document.createElement('audio');
+      page5AudioElement.id = 'page5Audio';
+      page5AudioElement.src = 'storytelling/page5.mp3';
+      page5AudioElement.preload = 'auto';
+      document.body.appendChild(page5AudioElement);
+
       // Add video source
       const source = document.createElement('source');
       source.src = 'storytelling/page5.mp4';
@@ -910,6 +1140,13 @@
       page6VideoElement.loop = true; // Allow video to loop playback
       page6VideoElement.crossOrigin = 'anonymous';
       page6VideoElement.preload = 'auto'; // Ensure preloading
+
+      // 創建音頻元素用於播放page6.mp3
+      const page6AudioElement = document.createElement('audio');
+      page6AudioElement.id = 'page6Audio';
+      page6AudioElement.src = 'storytelling/page6.mp3';
+      page6AudioElement.preload = 'auto';
+      document.body.appendChild(page6AudioElement);
 
       // Add video source
       const source = document.createElement('source');
@@ -966,6 +1203,13 @@
       coverVideoElement.crossOrigin = 'anonymous';
       coverVideoElement.preload = 'auto';
 
+      // 創建音頻元素用於播放cover.mp3
+      const coverAudioElement = document.createElement('audio');
+      coverAudioElement.id = 'coverAudio';
+      coverAudioElement.src = 'storytelling/cover.mp3';
+      coverAudioElement.preload = 'auto';
+      document.body.appendChild(coverAudioElement);
+
       // Add video source
       const source = document.createElement('source');
       source.src = 'storytelling/cover.mp4';
@@ -977,6 +1221,20 @@
 
       // Load video
       coverVideoElement.load();
+
+      // 監聽視頻播放事件，播放音頻
+      coverVideoElement.addEventListener('play', function() {
+        const coverAudio = document.getElementById('coverAudio');
+        if (coverAudio) {
+          coverAudio.currentTime = 0;
+          coverAudio.play().catch(e => console.error('無法播放cover音頻:', e));
+          
+          // 降低背景音乐音量
+          if (bgMusicElement) {
+            bgMusicElement.volume = 0.05; // 从0.1降低到0.05
+          }
+        }
+      });
 
       // Add load success event
       coverVideoElement.addEventListener('canplaythrough', function onCanPlay() {
@@ -1070,6 +1328,13 @@
       console.log("Starting cover slide animation");
       isAnimating = true;
 
+      // 停止封面音頻播放
+      const coverAudio = document.getElementById('coverAudio');
+      if (coverAudio) {
+        coverAudio.pause();
+        coverAudio.currentTime = 0;
+      }
+
       // Reset focus state
       focusedPage = null;
 
@@ -1111,6 +1376,13 @@
         page1VideoElement.play().catch(err => {
           console.error('Unable to play page1 video:', err);
         });
+        
+        // 播放page1音頻
+        const page1Audio = document.getElementById('page1Audio');
+        if (page1Audio) {
+          page1Audio.currentTime = 0;
+          page1Audio.play().catch(e => console.error('無法播放page1音頻:', e));
+        }
       }
 
       // Create a spine object, fixed on the left
@@ -1189,6 +1461,9 @@
           bookContainer.add(pageMesh);
 
           console.log("Cover slide animation complete, current page:", currentPage);
+
+          // 更新页面可见性和游戏提示按钮
+          updatePagesVisibility();
         }
       });
 
@@ -1208,6 +1483,13 @@
 
       isAnimating = true;
       currentPage = 2; // Set current page to the second page
+
+      // 停止page1音頻播放
+      const page1Audio = document.getElementById('page1Audio');
+      if (page1Audio) {
+        page1Audio.pause();
+        page1Audio.currentTime = 0;
+      }
 
       // Reset focus state
       focusedPage = null;
@@ -1259,6 +1541,13 @@
         page2VideoElement.play().catch(err => {
           console.error('Unable to play Page2 video:', err);
         });
+        
+        // 播放page2音頻
+        const page2Audio = document.getElementById('page2Audio');
+        if (page2Audio) {
+          page2Audio.currentTime = 0;
+          page2Audio.play().catch(e => console.error('無法播放page2音頻:', e));
+        }
       }
 
       // Create page1 left movement animation
@@ -1321,6 +1610,10 @@
           bookContainer.add(page2Mesh);
 
           isAnimating = false;
+          
+          // 更新页面可见性和游戏提示按钮
+          updatePagesVisibility();
+          
           console.log('Turned to page2 video complete, can click to continue to page3');
         }
       });
@@ -1341,6 +1634,13 @@
 
       isAnimating = true;
       currentPage = 3; // Set current page to the third page
+
+      // 停止page2音頻播放
+      const page2Audio = document.getElementById('page2Audio');
+      if (page2Audio) {
+        page2Audio.pause();
+        page2Audio.currentTime = 0;
+      }
 
       // Reset focus state
       focusedPage = null;
@@ -1392,6 +1692,13 @@
         page3VideoElement.play().catch(err => {
           console.error('Unable to play Page3 video:', err);
         });
+        
+        // 播放page3音頻
+        const page3Audio = document.getElementById('page3Audio');
+        if (page3Audio) {
+          page3Audio.currentTime = 0;
+          page3Audio.play().catch(e => console.error('無法播放page3音頻:', e));
+        }
       }
 
       // Create page2 left movement animation
@@ -1454,6 +1761,10 @@
           bookContainer.add(page3Mesh);
 
           isAnimating = false;
+          
+          // 更新页面可见性和游戏提示按钮
+          updatePagesVisibility();
+          
           console.log('Turned to page3 video complete, can click to continue to page4');
         }
       });
@@ -1474,6 +1785,13 @@
 
       isAnimating = true;
       currentPage = 4; // Set current page to the fourth page
+
+      // 停止page3音頻播放
+      const page3Audio = document.getElementById('page3Audio');
+      if (page3Audio) {
+        page3Audio.pause();
+        page3Audio.currentTime = 0;
+      }
 
       // Reset focus state
       focusedPage = null;
@@ -1525,6 +1843,13 @@
         page4VideoElement.play().catch(err => {
           console.error('Unable to play Page4 video:', err);
         });
+        
+        // 播放page4音頻
+        const page4Audio = document.getElementById('page4Audio');
+        if (page4Audio) {
+          page4Audio.currentTime = 0;
+          page4Audio.play().catch(e => console.error('無法播放page4音頻:', e));
+        }
       }
 
       // Create page3 left movement animation
@@ -1587,6 +1912,10 @@
           bookContainer.add(page4Mesh);
 
           isAnimating = false;
+          
+          // 更新页面可见性和游戏提示按钮
+          updatePagesVisibility();
+          
           console.log('Turned to page4 video complete, can click to continue to page5');
         }
       });
@@ -1607,6 +1936,13 @@
 
       isAnimating = true;
       currentPage = 5; // Set current page to the fifth page
+
+      // 停止page4音頻播放
+      const page4Audio = document.getElementById('page4Audio');
+      if (page4Audio) {
+        page4Audio.pause();
+        page4Audio.currentTime = 0;
+      }
 
       // Reset focus state
       focusedPage = null;
@@ -1658,6 +1994,13 @@
         page5VideoElement.play().catch(err => {
           console.error('Unable to play Page5 video:', err);
         });
+        
+        // 播放page5音頻
+        const page5Audio = document.getElementById('page5Audio');
+        if (page5Audio) {
+          page5Audio.currentTime = 0;
+          page5Audio.play().catch(e => console.error('無法播放page5音頻:', e));
+        }
       }
 
       // Create page4 left movement animation
@@ -1720,6 +2063,10 @@
           bookContainer.add(page5Mesh);
 
           isAnimating = false;
+          
+          // 更新页面可见性和游戏提示按钮
+          updatePagesVisibility();
+          
           console.log('Turned to page5 video complete, this is the last page');
         }
       });
@@ -1740,6 +2087,13 @@
 
       isAnimating = true;
       currentPage = 6; // Set current page to the sixth page
+
+      // 停止page5音頻播放
+      const page5Audio = document.getElementById('page5Audio');
+      if (page5Audio) {
+        page5Audio.pause();
+        page5Audio.currentTime = 0;
+      }
 
       // Reset focus state
       focusedPage = null;
@@ -1791,6 +2145,13 @@
         page6VideoElement.play().catch(err => {
           console.error('Unable to play Page6 video:', err);
         });
+        
+        // 播放page6音頻
+        const page6Audio = document.getElementById('page6Audio');
+        if (page6Audio) {
+          page6Audio.currentTime = 0;
+          page6Audio.play().catch(e => console.error('無法播放page6音頻:', e));
+        }
       }
 
       // Create page5 left movement animation
@@ -1857,6 +2218,9 @@
 
           isAnimating = false;
           console.log('Turned to page6 video complete, this is the last page');
+
+          // 更新页面可见性和游戏提示按钮
+          updatePagesVisibility();
         }
       });
 
@@ -2007,6 +2371,13 @@
       if (coverVideoElement) {
         coverVideoElement.currentTime = 0;
         coverVideoElement.play().catch(e => console.error('Unable to replay cover video:', e));
+        
+        // 播放cover音頻
+        const coverAudio = document.getElementById('coverAudio');
+        if (coverAudio) {
+          coverAudio.currentTime = 0;
+          coverAudio.play().catch(e => console.error('無法播放cover音頻:', e));
+        }
       }
 
       // Ensure cover is on top
@@ -2038,6 +2409,10 @@
 
             isAnimating = false;
             focusedPage = null;
+            
+            // 更新页面可见性和游戏提示按钮
+            updatePagesVisibility();
+            
             console.log('Cover state has been restored');
           }
         });
@@ -2371,6 +2746,9 @@
         if (page5Mesh) page5Mesh.visible = true;
         if (page6Mesh) page6Mesh.visible = true;
       }
+      
+      // 根据当前页面更新游戏提示按钮
+      createGameNavigationPrompt();
     }
 
     // Directly restore to cover state without using resetToInitialCoverState function (to avoid recursion)
@@ -2434,6 +2812,9 @@
         duration: 1,
         ease: "power2.inOut"
       });
+
+      // 更新页面可见性和游戏提示按钮
+      updatePagesVisibility();
     }
 
     // Directly reset to specified page
@@ -2539,6 +2920,13 @@
         if (coverVideoElement) {
           coverVideoElement.currentTime = 0;
           coverVideoElement.play().catch(e => console.error('Unable to play cover video:', e));
+          
+          // 播放cover音頻
+          const coverAudio = document.getElementById('coverAudio');
+          if (coverAudio) {
+            coverAudio.currentTime = 0;
+            coverAudio.play().catch(e => console.error('無法播放cover音頻:', e));
+          }
         }
 
         // Adjust camera position
@@ -2552,6 +2940,9 @@
             isAnimating = false;
             console.log("Cover page reset complete");
             logPagePositions();
+            
+            // 更新页面可见性和游戏提示按钮状态
+            updatePagesVisibility();
           }
         });
 
@@ -2691,36 +3082,78 @@
           if (page1VideoElement) {
             page1VideoElement.currentTime = 0;
             page1VideoElement.play().catch(e => console.error('Unable to play page1 video:', e));
+            
+            // 播放page1音頻
+            const page1Audio = document.getElementById('page1Audio');
+            if (page1Audio) {
+              page1Audio.currentTime = 0;
+              page1Audio.play().catch(e => console.error('無法播放page1音頻:', e));
+            }
           }
           break;
         case 2:
           if (page2VideoElement) {
             page2VideoElement.currentTime = 0;
             page2VideoElement.play().catch(e => console.error('Unable to play page2 video:', e));
+            
+            // 播放page2音頻
+            const page2Audio = document.getElementById('page2Audio');
+            if (page2Audio) {
+              page2Audio.currentTime = 0;
+              page2Audio.play().catch(e => console.error('無法播放page2音頻:', e));
+            }
           }
           break;
         case 3:
           if (page3VideoElement) {
             page3VideoElement.currentTime = 0;
             page3VideoElement.play().catch(e => console.error('Unable to play page3 video:', e));
+            
+            // 播放page3音頻
+            const page3Audio = document.getElementById('page3Audio');
+            if (page3Audio) {
+              page3Audio.currentTime = 0;
+              page3Audio.play().catch(e => console.error('無法播放page3音頻:', e));
+            }
           }
           break;
         case 4:
           if (page4VideoElement) {
             page4VideoElement.currentTime = 0;
             page4VideoElement.play().catch(e => console.error('Unable to play page4 video:', e));
+            
+            // 播放page4音頻
+            const page4Audio = document.getElementById('page4Audio');
+            if (page4Audio) {
+              page4Audio.currentTime = 0;
+              page4Audio.play().catch(e => console.error('無法播放page4音頻:', e));
+            }
           }
           break;
         case 5:
           if (page5VideoElement) {
             page5VideoElement.currentTime = 0;
             page5VideoElement.play().catch(e => console.error('Unable to play page5 video:', e));
+            
+            // 播放page5音頻
+            const page5Audio = document.getElementById('page5Audio');
+            if (page5Audio) {
+              page5Audio.currentTime = 0;
+              page5Audio.play().catch(e => console.error('無法播放page5音頻:', e));
+            }
           }
           break;
         case 6:
           if (page6VideoElement) {
             page6VideoElement.currentTime = 0;
             page6VideoElement.play().catch(e => console.error('Unable to play page6 video:', e));
+            
+            // 播放page6音頻
+            const page6Audio = document.getElementById('page6Audio');
+            if (page6Audio) {
+              page6Audio.currentTime = 0;
+              page6Audio.play().catch(e => console.error('無法播放page6音頻:', e));
+            }
           }
           break;
       }
@@ -2736,6 +3169,10 @@
           isAnimating = false;
           console.log("Page reset complete, current page:", pageNum);
           logPagePositions();
+          
+          // 更新页面可见性和游戏提示按钮状态
+          updatePagesVisibility();
+          
           console.log("===== PAGE RESET COMPLETE =====");
         }
       });
@@ -2751,6 +3188,54 @@
       if (page4VideoElement && !page4VideoElement.paused) page4VideoElement.pause();
       if (page5VideoElement && !page5VideoElement.paused) page5VideoElement.pause();
       if (page6VideoElement && !page6VideoElement.paused) page6VideoElement.pause();
+      
+      // 停止所有音頻
+      const coverAudio = document.getElementById('coverAudio');
+      if (coverAudio) {
+        coverAudio.pause();
+        coverAudio.currentTime = 0;
+      }
+      
+      const page1Audio = document.getElementById('page1Audio');
+      if (page1Audio) {
+        page1Audio.pause();
+        page1Audio.currentTime = 0;
+      }
+      
+      const page2Audio = document.getElementById('page2Audio');
+      if (page2Audio) {
+        page2Audio.pause();
+        page2Audio.currentTime = 0;
+      }
+      
+      const page3Audio = document.getElementById('page3Audio');
+      if (page3Audio) {
+        page3Audio.pause();
+        page3Audio.currentTime = 0;
+      }
+      
+      const page4Audio = document.getElementById('page4Audio');
+      if (page4Audio) {
+        page4Audio.pause();
+        page4Audio.currentTime = 0;
+      }
+      
+      const page5Audio = document.getElementById('page5Audio');
+      if (page5Audio) {
+        page5Audio.pause();
+        page5Audio.currentTime = 0;
+      }
+      
+      const page6Audio = document.getElementById('page6Audio');
+      if (page6Audio) {
+        page6Audio.pause();
+        page6Audio.currentTime = 0;
+      }
+      
+      // 恢复背景音乐音量
+      if (bgMusicElement) {
+        bgMusicElement.volume = 0.6; // 从0.8降低到0.6
+      }
     }
 
     // Add a new function for transitioning from storybook to game page
@@ -2810,6 +3295,11 @@
         document.body.removeChild(existingPrompt);
       }
 
+      // 只在当前页面是第6页时创建按钮
+      if (currentPage !== 6) {
+        return;
+      }
+
       // Create prompt element
       const promptElement = document.createElement('div');
       promptElement.id = 'gamePrompt';
@@ -2828,7 +3318,7 @@
       promptElement.style.zIndex = '1000';
       promptElement.style.cursor = 'pointer';
       promptElement.style.animation = 'pulsePrompt 2s infinite';
-      promptElement.innerHTML = 'Click to Enter Game <span style="margin-left: 8px;">➡️</span>';
+      promptElement.innerHTML = 'Enter to Start Game <span style="margin-left: 8px;">➡️</span>';
 
       // Add animation style
       const style = document.createElement('style');
@@ -2848,17 +3338,6 @@
 
       // Add to page
       document.body.appendChild(promptElement);
-
-      // Automatically fade out the prompt after 5 seconds
-      setTimeout(() => {
-        promptElement.style.transition = 'opacity 1s ease-out';
-        promptElement.style.opacity = '0';
-        setTimeout(() => {
-          if (promptElement && promptElement.parentNode) {
-            promptElement.parentNode.removeChild(promptElement);
-          }
-        }, 1000);
-      }, 5000);
     }
   </script>
 </body>

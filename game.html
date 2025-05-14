@@ -320,6 +320,25 @@
   <!-- Import via Vite -->
   <script type="module" src="/main.js"></script>
   <script>
+    // Apply fade-in effect for all game starts
+    window.addEventListener('DOMContentLoaded', function () {
+      // Add fade-in effect to the start screen
+      document.querySelector('.start-screen').classList.add('fade-in');
+      
+      // 在彈窗出現時播放start.mp3音頻
+      const startAudio = new Audio('storytelling/start.mp3');
+      startAudio.play().catch(e => console.error('無法播放start音頻:', e));
+
+      // Auto-focus the start button so users can press Enter to start the game
+      setTimeout(() => {
+        const startButton = document.querySelector('.start-button');
+        if (startButton) {
+          startButton.focus();
+        }
+      }, 1500);
+    });
+    
+    
     document.addEventListener('DOMContentLoaded', function () {
       const startScreen = document.getElementById('startScreen');
       const startButton = document.getElementById('startButton');
@@ -333,6 +352,7 @@
         // Hide start screen with fade out effect
         startScreen.style.transition = 'opacity 1s ease-out';
         startScreen.style.opacity = '0';
+        
         setTimeout(() => {
           startScreen.style.display = 'none';
           // Show game elements
@@ -342,20 +362,6 @@
           window.dispatchEvent(new Event('gamestart'));
         }, 1000);
       });
-    });
-
-    // Apply fade-in effect for all game starts
-    window.addEventListener('DOMContentLoaded', function () {
-      // Add fade-in effect to the start screen
-      document.querySelector('.start-screen').classList.add('fade-in');
-
-      // Auto-focus the start button so users can press Enter to start the game
-      setTimeout(() => {
-        const startButton = document.querySelector('.start-button');
-        if (startButton) {
-          startButton.focus();
-        }
-      }, 1500);
     });
   </script>
 </body>
