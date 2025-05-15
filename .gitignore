@@ -59,3 +59,5 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+publish.sh
