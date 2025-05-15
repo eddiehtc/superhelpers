@@ -43,29 +43,216 @@
       color: #333;
       transform: scale(1.05);
     }
+
+    /* 封面页样式 */
+    #coverPage {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      overflow: hidden;
+    }
+
+    #coverBgVideo {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    #coverJpgContainer {
+      position: relative;
+      width: 35%;
+      max-width: 600px;
+      aspect-ratio: 2035/2044;
+      margin-bottom: 30px;
+      overflow: hidden;
+      background-color: transparent;
+      filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.3));
+    }
+    
+    #coverJpg {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      filter: none;
+      transform: translateY(-5px);
+      transition: transform 0.3s ease;
+    }
+    
+    #coverJpgContainer:hover #coverJpg {
+      transform: translateY(-10px);
+    }
+
+    /* 脉动动画 */
+    @keyframes pulsePrompt {
+      0% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.1); }
+      100% { transform: translateX(-50%) scale(1); }
+    }
+
+    /* 添加星星动画 */
+    @keyframes twinkle {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0); }
+    }
+    
+    @keyframes glow {
+      0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.6), 0 0 10px rgba(255, 215, 0, 0.4); }
+      50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6); }
+      100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.6), 0 0 10px rgba(255, 215, 0, 0.4); }
+    }
+    
+    #startButton {
+      position: fixed; /* 改为fixed定位，确保不受滚动影响 */
+      top: 65%; /* 从50%调整为65%，使按钮下移 */
+      right: 25%; /* 从20%调整为25%，使按钮左移 */
+      transform: translateY(-50%);
+      padding: 15px 25px; /* 增大按钮尺寸 */
+      background-color: rgba(139, 69, 19, 0.9); /* 提高不透明度 */
+      color: #FFD700;
+      border: 3px solid #FFD700; /* 加粗边框 */
+      border-radius: 25px;
+      font-family: "Arial", sans-serif;
+      font-size: 22px; /* 增大字体 */
+      font-weight: 600;
+      cursor: pointer;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+      z-index: 10000; /* 大幅提高z-index */
+      display: flex;
+      align-items: center;
+      animation: float 3s ease-in-out infinite;
+      box-shadow: 
+        0 0 15px rgba(255, 215, 0, 0.8),
+        0 0 30px rgba(255, 215, 0, 0.6);
+      transition: all 0.3s ease;
+      white-space: nowrap; /* 防止文字换行 */
+    }
+    
+    #startButton::before, #startButton::after {
+      content: "★";
+      color: #FFD700;
+      position: absolute;
+      font-size: 14px;
+      animation: twinkle 2s infinite;
+    }
+    
+    #startButton::before {
+      top: -8px;
+      left: 15px;
+      animation-delay: 0.3s;
+    }
+    
+    #startButton::after {
+      bottom: -8px;
+      right: 15px;
+      animation-delay: 0.7s;
+    }
+    
+    #startButton .arrow {
+      background-color: #FFD700;
+      color: #8B4513;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      margin-left: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      animation: glow 2s infinite;
+      transition: all 0.3s ease;
+    }
+    
+    #startButton:hover {
+      transform: scale(1.1);
+      background-color: rgba(139, 69, 19, 0.95);
+      box-shadow: 
+        0 0 15px rgba(255, 215, 0, 0.9),
+        0 0 30px rgba(255, 215, 0, 0.7);
+    }
+    
+    #startButton:hover .arrow {
+      transform: scale(1.2);
+    }
+
+    /* 左倾斜脉动动画 */
+    @keyframes pulsePromptLeft {
+      0% { transform: translateX(-50%) translateX(35px) translateY(-20px) rotate(-5deg) scale(1); }
+      50% { transform: translateX(-50%) translateX(35px) translateY(-20px) rotate(-5deg) scale(1.1); }
+      100% { transform: translateX(-50%) translateX(35px) translateY(-20px) rotate(-5deg) scale(1); }
+    }
+
+    /* 隐藏整个故事容器，直到点击开始按钮 */
+    #storyContainer {
+      display: none;
+    }
   </style>
 </head>
 
 <body>
-  <!-- Skip button -->
-  <button id="skipButton">Skip Story</button>
+  <!-- 封面页 -->
+  <div id="coverPage">
+    <video id="coverBgVideo" autoplay muted loop playsinline>
+      <source src="storytelling/BG-Image.mp4" type="video/mp4">
+    </video>
+    <div id="coverJpgContainer">
+      <img id="coverJpg" src="storytelling/cover.png" alt="Super Helpers Cover">
+    </div>
+    <button id="startButton">Start the Journey <span class="arrow">➜</span></button>
+  </div>
 
-  <!-- 添加背景音乐元素 -->
-  <audio id="bgMusic" loop preload="auto">
-    <source src="storytelling/bg-music.mp3" type="audio/mpeg">
-  </audio>
+  <!-- 故事内容容器 -->
+  <div id="storyContainer">
+    <!-- Skip button -->
+    <button id="skipButton">Skip Story</button>
 
-  <!-- Preload two videos but hide them -->
-  <video id="videoPreload" preload="auto" muted playsinline>
-    <source src="storytelling/BG-Image.mp4" type="video/mp4">
-  </video>
-  <video id="videoPreload2" preload="auto" muted playsinline>
-    <source src="storytelling/BG-Image-2.mp4" type="video/mp4">
-  </video>
+    <!-- 添加背景音乐元素 -->
+    <audio id="bgMusic" loop preload="auto">
+      <source src="storytelling/bg-music.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Preload two videos but hide them -->
+    <video id="videoPreload" preload="auto" muted playsinline>
+      <source src="storytelling/BG-Image.mp4" type="video/mp4">
+    </video>
+    <video id="videoPreload2" preload="auto" muted playsinline>
+      <source src="storytelling/BG-Image-2.mp4" type="video/mp4">
+    </video>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.11.5/dist/gsap.min.js"></script>
   <script>
+    // 添加点击开始按钮的事件处理
+    document.getElementById('startButton').addEventListener('click', function() {
+      // 隐藏封面页
+      document.getElementById('coverPage').style.display = 'none';
+      // 显示故事内容
+      document.getElementById('storyContainer').style.display = 'block';
+      // 初始化Three.js场景
+      init();
+      animate();
+    });
+
     let scene, camera, renderer;
     let coverMesh, pageMesh, page2Mesh, page3Mesh, page4Mesh, page5Mesh, page6Mesh;
     let coverVideoElement = null; // Cover video element
@@ -103,9 +290,6 @@
 
     // Global variable for debugging
     let debugVideoTexture = null;
-
-    init();
-    animate();
 
     function init() {
       scene = new THREE.Scene();
@@ -3318,7 +3502,7 @@
       promptElement.style.zIndex = '1000';
       promptElement.style.cursor = 'pointer';
       promptElement.style.animation = 'pulsePrompt 2s infinite';
-      promptElement.innerHTML = 'Enter to Start Game <span style="margin-left: 8px;">➡️</span>';
+      promptElement.innerHTML = 'Start the Mission <span style="margin-left: 8px;">➡️</span>';
 
       // Add animation style
       const style = document.createElement('style');
